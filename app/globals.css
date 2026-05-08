@@ -1,8 +1,12 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #05070f;
+  --foreground: #f3f9ff;
+  --panel: rgba(22, 27, 45, 0.65);
+  --cyan: #1ee7ff;
+  --blue: #5f89ff;
+  --purple: #aa68ff;
 }
 
 @theme inline {
@@ -12,15 +16,29 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+body {
+  background:
+    radial-gradient(circle at 20% -10%, rgba(95, 137, 255, 0.25), transparent 40%),
+    radial-gradient(circle at 80% -5%, rgba(170, 104, 255, 0.25), transparent 42%),
+    var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+* {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.glass {
+  background: var(--panel);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(16px);
+}
+
+.neon-border {
+  box-shadow: 0 0 0 1px rgba(30, 231, 255, 0.25), 0 0 30px rgba(95, 137, 255, 0.2);
+}
+
+.focus-ring {
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black;
 }
