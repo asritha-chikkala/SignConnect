@@ -26,18 +26,23 @@ export default function EmergencyPage() {
 
   return (
     <AppShell>
-      <Card className="border-rose-400/40">
-        <h1 className="text-2xl font-semibold text-rose-200">Emergency Offline Panel</h1>
+      <Card className="border-rose-400/40 bg-gradient-to-b from-rose-900/30 to-black/30">
+        <h1 className="text-2xl font-semibold text-rose-200" style={{ fontFamily: "var(--font-syne)" }}>
+          Emergency Accessibility Mode
+        </h1>
         <p className="mt-2 text-sm text-white/70">
           {offline ? "Offline mode active." : "Online. Emergency panel is still API-independent."}
+        </p>
+        <p className="mt-1 inline-flex rounded-full border border-rose-400/30 px-2 py-1 text-xs text-rose-200">
+          {offline ? "OFFLINE CACHE ACTIVE" : "NETWORK CONNECTED"}
         </p>
         <div className="mt-4 grid gap-3 md:grid-cols-2">
           {phrases.map((phrase) => (
             <button
               key={phrase.id}
-              className="focus-ring rounded-xl border bg-black/50 p-4 text-left hover:bg-black/70"
+              className="focus-ring rounded-xl border border-rose-400/30 bg-black/50 p-4 text-left transition hover:scale-[1.01] hover:bg-rose-500/10"
             >
-              <p className="text-lg font-semibold text-cyan-300">{phrase.label}</p>
+              <p className="text-lg font-semibold text-rose-200">{phrase.label}</p>
               <p className="mt-1 text-sm text-white/70">{phrase.gloss.join(" ")}</p>
             </button>
           ))}

@@ -1,17 +1,26 @@
+const GLOSS_FALLBACK = (transcript: string) =>
+  transcript
+    .toUpperCase()
+    .split(/\s+/)
+    .filter(Boolean);
+
 export async function generateGlossWithGrok(transcript: string): Promise<string[]> {
-  if (!process.env.GROK_API_KEY) {
-    return transcript.toUpperCase().split(/\s+/).filter(Boolean);
+  const apiKey = process.env.GROK_API_KEY || process.env.XAI_API_KEY;
+  if (!apiKey) {
+    return GLOSS_FALLBACK(transcript);
   }
 
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 12000);
     const response = await fetch("https://api.x.ai/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.GROK_API_KEY}`,
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: "grok-2",
+        model: process.env.GROK_MODEL || "grok-2",
         messages: [
           {
             role: "user",
@@ -23,24 +32,25 @@ export async function generateGlossWithGrok(transcript: string): Promise<string[
         temperature: 0.7,
         max_tokens: 200,
       }),
+      signal: controller.signal,
     });
+    clearTimeout(timeout);
 
     if (!response.ok) {
-      const error = await response.json();
-      console.error("Grok API error:", error);
-      return transcript.toUpperCase().split(/\s+/).filter(Boolean);
+      return GLOSS_FALLBACK(transcript);
     }
 
-    const data = await response.json();
-    const text = data.choices[0]?.message?.content ?? "";
+    const data = (await response.json()) as {
+      choices?: Array<{ message?: { content?: string } }>;
+    };
+    const text = data.choices?.[0]?.message?.content ?? "";
 
     return text
       .replace(/\./g, "")
       .split(/[,\s]+/)
       .map((v: string) => v.trim().toUpperCase())
       .filter(Boolean);
-  } catch (error) {
-    console.error("Error calling Grok API:", error);
-    return transcript.toUpperCase().split(/\s+/).filter(Boolean);
+  } catch {
+    return GLOSS_FALLBACK(transcript);
   }
 }

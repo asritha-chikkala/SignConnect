@@ -6,7 +6,7 @@ Production-style AI accessibility platform for real-time Indian Sign Language co
 
 - Next.js App Router + TypeScript + Tailwind CSS + Framer Motion
 - Supabase Auth/PostgreSQL + Google OAuth
-- Claude API + Deepgram + Neo4j AuraDB integration points
+- Grok API + Deepgram + Neo4j AuraDB integration points
 - Three.js + `@pixiv/three-vrm` avatar stage
 - IndexedDB offline caching and `next-pwa`
 

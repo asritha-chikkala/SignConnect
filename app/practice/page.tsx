@@ -11,8 +11,10 @@ export default function PracticePage() {
   const [speed, setSpeed] = useState(0.5);
   return (
     <AppShell>
-      <Card>
-        <h1 className="text-2xl font-semibold">Practice & Recap</h1>
+      <Card className="p-6">
+        <h1 className="text-2xl font-semibold text-cyan-100" style={{ fontFamily: "var(--font-syne)" }}>
+          Practice & Recap
+        </h1>
         <p className="mt-2 text-white/70">Replay previous signs and review learning cards.</p>
         <label className="mt-4 block text-sm">Slow motion replay: {speed.toFixed(1)}x</label>
         <input
@@ -24,7 +26,7 @@ export default function PracticePage() {
           onChange={(e) => setSpeed(Number(e.target.value))}
           className="mt-2 w-full"
         />
-        <div className="mt-4 grid gap-3 md:grid-cols-2">
+        <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-4">
           {recap.map((item) => (
             <Card key={item} className="p-3">
               <p className="font-medium">{item}</p>

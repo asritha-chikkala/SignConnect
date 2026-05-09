@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { NeuralBackground } from "@/components/neural-background";
 
 const nav = [
   { href: "/translator", label: "Translator" },
@@ -15,20 +16,24 @@ const nav = [
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const reduceMotion = useReducedMotion();
+
   return (
-    <div className="min-h-screen">
-      <header className="sticky top-0 z-40 border-b border-white/10 bg-black/50 backdrop-blur-xl">
+    <div className="relative min-h-screen pb-20 md:pb-8">
+      <NeuralBackground />
+      <header className="sticky top-0 z-40 border-b border-cyan-300/15 bg-black/40 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
-          <Link href="/" className="text-lg font-semibold tracking-wide text-cyan-300">
-            SignBridge
+          <Link href="/" prefetch className="text-lg font-semibold tracking-wide text-cyan-300 neon-text">
+            <span style={{ fontFamily: "var(--font-syne)" }}>SignBridge</span>
           </Link>
-          <nav className="flex gap-2 overflow-auto">
+          <nav className="hidden gap-2 overflow-auto md:flex" aria-label="Primary navigation">
             {nav.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
+                prefetch
                 className={cn(
-                  "relative rounded-lg px-3 py-2 text-sm text-white/80 hover:text-white",
+                  "relative rounded-lg px-3 py-2 text-sm text-white/75 transition-colors hover:text-white",
                   pathname === item.href && "text-white",
                 )}
               >
@@ -44,7 +49,38 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </nav>
         </div>
       </header>
-      <main className="mx-auto max-w-7xl px-4 py-8">{children}</main>
+
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.main
+          key={pathname}
+          initial={reduceMotion ? false : { opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={reduceMotion ? {} : { opacity: 0, y: -4 }}
+          transition={{ duration: 0.26, ease: "easeOut" }}
+          className="relative mx-auto max-w-7xl px-4 py-8"
+        >
+          {children}
+        </motion.main>
+      </AnimatePresence>
+
+      <nav
+        className="fixed inset-x-2 bottom-2 z-50 grid grid-cols-5 gap-1 rounded-2xl border border-cyan-300/20 bg-black/70 p-1 backdrop-blur-xl md:hidden"
+        aria-label="Bottom navigation"
+      >
+        {nav.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            prefetch
+            className={cn(
+              "rounded-xl px-2 py-2 text-center text-[11px] text-white/70",
+              pathname === item.href && "bg-cyan-300/15 text-cyan-200",
+            )}
+          >
+            {item.label}
+          </Link>
+        ))}
+      </nav>
     </div>
   );
 }

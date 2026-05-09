@@ -3,6 +3,7 @@ import { createServerClient } from "@supabase/ssr";
 
 export async function proxy(req: NextRequest) {
   const res = NextResponse.next();
+  const pathname = req.nextUrl.pathname;
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "",
@@ -18,12 +19,26 @@ export async function proxy(req: NextRequest) {
     data: { session },
   } = await supabase.auth.getSession();
 
-  if (!session && req.nextUrl.pathname.startsWith("/dashboard")) {
+  const isAuthPage = pathname === "/login" || pathname === "/signup";
+  const isProtected =
+    pathname === "/" ||
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/translator") ||
+    pathname.startsWith("/practice") ||
+    pathname.startsWith("/emergency") ||
+    pathname.startsWith("/demo");
+
+  if (!session && isProtected) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
+
+  if (session && isAuthPage) {
+    return NextResponse.redirect(new URL("/", req.url));
+  }
+
   return res;
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*"],
+  matcher: ["/((?!_next|api|favicon.ico|.*\\..*).*)"],
 };

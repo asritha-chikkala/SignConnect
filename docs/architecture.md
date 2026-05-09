@@ -2,7 +2,7 @@
 
 - `app/`: Next.js 14 App Router pages, API routes, and protected flows.
 - `components/`: UI primitives and feature components including VRM stage.
-- `services/`: External integrations (Claude, Neo4j, Deepgram-ready adapters).
+- `services/`: External integrations (Grok, Neo4j, Deepgram-ready adapters).
 - `lib/`: Shared runtime logic such as fallback orchestration and Supabase clients.
 - `hooks/`: Browser hooks (IndexedDB cache and offline support).
 - `data/`: Stable emergency/demo phrase datasets.
