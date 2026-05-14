@@ -6,6 +6,8 @@ export type TranslationChunk = {
   sentiment: Sentiment;
   unknownWords: string[];
   processing: boolean;
+  /** When true, the translation service used Grok for sentiment (otherwise heuristic). */
+  sentimentFromGrok?: boolean;
 };
 
 export type EmergencyPhrase = {

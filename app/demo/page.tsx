@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { AppShell } from "@/components/app-shell";
 import { Card } from "@/components/ui/card";
@@ -16,6 +16,7 @@ export default function DemoPage() {
   const [running, setRunning] = useState(false);
   const [slowMode, setSlowMode] = useState(false);
   const [sentiment, setSentiment] = useState<Sentiment>("neutral");
+  const gloss = useMemo(() => SCRIPT[index].split(/\s+/).filter(Boolean), [index]);
 
   useEffect(() => {
     const phrase = SCRIPT[index];
@@ -68,7 +69,14 @@ export default function DemoPage() {
             </p>
           </div>
           <div>
-            <AvatarStage sentiment={sentiment} lowBandwidth />
+            <AvatarStage
+              sentiment={sentiment}
+              lowBandwidth
+              gloss={gloss}
+              signReplayKey={index}
+              signingSpeed={slowMode ? 0.5 : 1}
+              learningSlowMo={slowMode ? 0.5 : 1}
+            />
           </div>
         </div>
         <div className="mt-5">

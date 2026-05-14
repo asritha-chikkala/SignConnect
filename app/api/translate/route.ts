@@ -15,17 +15,22 @@ export async function POST(request: Request) {
   try {
     const { transcript } = await request.json();
     const fallback = await resolvePhrase(transcript ?? "");
-    const glossFromGrok = await generateGlossWithGrok(transcript ?? "");
-    const gloss = glossFromGrok.length ? glossFromGrok : fallback.map((f) => f.sign);
+    const grok = await generateGlossWithGrok(transcript ?? "");
+    const gloss = grok.gloss.length ? grok.gloss : fallback.map((f) => f.sign);
     const unknownWords = fallback
       .filter((entry) => entry.step === "fingerspelling")
       .map((entry) => entry.word);
+
+    const heuristic = detectSentiment(transcript ?? "");
+    const sentiment = grok.sentiment ?? heuristic;
+    const sentimentFromGrok = Boolean(grok.sentiment);
 
     return NextResponse.json({
       transcript,
       gloss,
       unknownWords,
-      sentiment: detectSentiment(transcript ?? ""),
+      sentiment,
+      sentimentFromGrok,
       processing: false,
     });
   } catch {

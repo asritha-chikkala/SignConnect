@@ -7,6 +7,7 @@ import { AppShell } from "@/components/app-shell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LoadingSkeleton } from "@/components/loading-skeleton";
+import { HomeTranslateBar } from "@/components/home-translate-bar";
 
 const AvatarStage = dynamic(
   () => import("@/components/avatar-stage").then((mod) => mod.AvatarStage),
@@ -147,6 +148,8 @@ export default function Home() {
           </Card>
         </div>
       </section>
+
+      <HomeTranslateBar />
 
       <section className="mt-8 grid gap-4 md:grid-cols-3">
         {sections.map(([title, body]) => (
