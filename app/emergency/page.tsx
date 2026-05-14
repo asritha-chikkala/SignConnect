@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import { Card } from "@/components/ui/card";
+import { AvatarStage } from "@/components/avatar-stage";  // ADD THIS
 import { EMERGENCY_PHRASES } from "@/data/emergency-phrases";
 import { useIndexedEmergencyCache } from "@/hooks/use-indexed-emergency-cache";
 
@@ -10,6 +11,8 @@ export default function EmergencyPage() {
   const { primeCache, getCached } = useIndexedEmergencyCache();
   const [phrases, setPhrases] = useState(EMERGENCY_PHRASES);
   const [offline, setOffline] = useState(false);
+  const [selectedGloss, setSelectedGloss] = useState<string[]>([]);
+  const [replayKey, setReplayKey] = useState(0);
 
   useEffect(() => {
     primeCache(EMERGENCY_PHRASES).catch(() => undefined);
@@ -24,8 +27,26 @@ export default function EmergencyPage() {
     };
   }, [primeCache, getCached]);
 
+  const handlePhraseClick = (gloss: string[]) => {
+    setSelectedGloss(gloss);
+    setReplayKey(prev => prev + 1);
+  };
+
   return (
     <AppShell>
+      {/* ADD AVATAR AT THE TOP */}
+      <div className="mb-6">
+        <AvatarStage 
+          sentiment="urgent" 
+          lowBandwidth={false}
+          gloss={selectedGloss}
+          signReplayKey={replayKey}
+          emergencyMode={true}
+          signingSpeed={1.2}
+          onLoadStatus={(phase, message) => console.log("Avatar:", phase, message)}
+        />
+      </div>
+
       <Card className="border-rose-400/40 bg-gradient-to-b from-rose-900/30 to-black/30">
         <h1 className="text-2xl font-semibold text-rose-200" style={{ fontFamily: "var(--font-syne)" }}>
           Emergency Accessibility Mode
@@ -40,6 +61,7 @@ export default function EmergencyPage() {
           {phrases.map((phrase) => (
             <button
               key={phrase.id}
+              onClick={() => handlePhraseClick(phrase.gloss)}
               className="focus-ring rounded-xl border border-rose-400/30 bg-black/50 p-4 text-left transition hover:scale-[1.01] hover:bg-rose-500/10"
             >
               <p className="text-lg font-semibold text-rose-200">{phrase.label}</p>
