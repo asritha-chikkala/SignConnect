@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import { AppShell } from "@/components/app-shell";
@@ -10,6 +10,7 @@ import { LoadingSkeleton } from "@/components/loading-skeleton";
 import { PipelineFlow } from "@/components/pipeline-flow";
 import { SigningHud } from "@/components/signing-hud";
 import { CollabPlaceholder } from "@/components/collab-placeholder";
+import { AvatarSelector, avatarStyles, type AvatarStyle } from "@/components/avatar-selector";
 import { SENTIMENT_THEME, type Sentiment } from "@/lib/utils";
 import { useSpeechInput } from "@/hooks/use-speech-input";
 import { useTranslatorHotkeys } from "@/hooks/use-translator-hotkeys";
@@ -25,7 +26,7 @@ const AvatarStage = dynamic(
 const SENTIMENTS: Sentiment[] = ["neutral", "question", "urgent", "happy"];
 
 export default function TranslatorPage() {
-  const [transcript, setTranscript] = useState("Hello, how are you?");
+  const [transcript, setTranscript] = useState("");
   const [chunk, setChunk] = useState<TranslationChunk>({
     transcript: "",
     gloss: [],
@@ -54,6 +55,10 @@ export default function TranslatorPage() {
   const [lastSpell, setLastSpell] = useState(false);
   const [signReplayKey, setSignReplayKey] = useState(0);
   const [sessionLog, setSessionLog] = useState<{ t: string; gloss: string[] }[]>([]);
+  
+  // Avatar selection states
+  const [selectedAvatar, setSelectedAvatar] = useState<AvatarStyle | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string>("");
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const recorder = useRecordCanvas();
@@ -64,12 +69,40 @@ export default function TranslatorPage() {
   const glow = useMemo(() => SENTIMENT_THEME[displaySentiment].glow, [displaySentiment]);
   const confidence = chunk.gloss.length ? Math.max(74, 96 - chunk.unknownWords.length * 8) : 0;
 
+  // Load saved avatar on mount
+  useEffect(() => {
+    const savedAvatarId = localStorage.getItem("selectedAvatar");
+    const savedAvatarUrl = localStorage.getItem("selectedAvatarUrl");
+    if (savedAvatarId && savedAvatarUrl) {
+      const avatar = avatarStyles.find(a => a.id === savedAvatarId);
+      if (avatar) {
+        setSelectedAvatar(avatar);
+        setAvatarUrl(savedAvatarUrl);
+      }
+    } else {
+      const defaultAvatar = avatarStyles.find(a => a.category === "ghibli") || avatarStyles[0];
+      setSelectedAvatar(defaultAvatar);
+      setAvatarUrl(defaultAvatar.vrmUrl);
+      localStorage.setItem("selectedAvatar", defaultAvatar.id);
+      localStorage.setItem("selectedAvatarUrl", defaultAvatar.vrmUrl);
+    }
+  }, []);
+
   const onHudUpdate = useCallback((s: AvatarHudState) => {
     setHud(s);
     setLastSpell(s.phase === "spelling");
   }, []);
 
+  const handleAvatarSelect = (avatar: AvatarStyle) => {
+    setSelectedAvatar(avatar);
+    setAvatarUrl(avatar.vrmUrl);
+    localStorage.setItem("selectedAvatar", avatar.id);
+    localStorage.setItem("selectedAvatarUrl", avatar.vrmUrl);
+  };
+
   const translate = useCallback(async () => {
+    if (!transcript.trim()) return;
+    
     setError("");
     setChunk((prev) => ({ ...prev, processing: true }));
     try {
@@ -100,34 +133,54 @@ export default function TranslatorPage() {
     true,
   );
 
+  const currentAvatarDisplay = selectedAvatar || avatarStyles[0];
+
   return (
     <AppShell>
+      {/* Avatar Selector Bar */}
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4 bg-black/30 rounded-xl p-4 border border-cyan-300/20">
+        <div className="flex items-center gap-3">
+          <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${currentAvatarDisplay.previewColor} flex items-center justify-center text-2xl shadow-lg`}>
+            {currentAvatarDisplay.previewEmoji}
+          </div>
+          <div>
+            <p className="text-xs text-white/50">Current Avatar</p>
+            <p className="text-sm font-medium text-white">{currentAvatarDisplay.name}</p>
+            <p className="text-xs text-white/30">{currentAvatarDisplay.category}</p>
+          </div>
+        </div>
+        <AvatarSelector 
+          onSelectAvatar={handleAvatarSelect}
+          currentAvatarId={selectedAvatar?.id}
+        />
+      </div>
+
       <div className="mb-4">
         <Card className="p-5">
           <h1 className="text-2xl text-cyan-100" style={{ fontFamily: "var(--font-syne)" }}>
             Neural Translator
           </h1>
           <p className="mt-2 text-sm text-white/70">
-            English speech or text → ISL gloss → procedural VRM bone animations (Mixer) + fingerspelling for unknown
-            tokens. No video clips.
+            English speech or text → ISL gloss → procedural VRM bone animations + fingerspelling for unknown tokens.
           </p>
           <p className="mt-2 text-[11px] text-white/45">
-            Shortcuts: Ctrl+Enter translate · Escape clear input · High contrast and ARIA regions below.
+            Type or speak a phrase, then click Translate. The avatar will sign your words.
           </p>
         </Card>
       </div>
 
       <div className={`grid gap-4 lg:grid-cols-[1fr_1.35fr_1fr] ${blur ? "backdrop-blur-sm" : ""}`}>
+        {/* Left Panel - Speech Input */}
         <Card className="space-y-3 p-5" role="region" aria-label="Translation input">
           <h2 className="text-xl font-semibold text-cyan-100">Speech Input</h2>
           <textarea
-            className="focus-ring h-40 w-full rounded-xl border border-cyan-300/20 bg-black/40 p-3"
+            className="focus-ring h-40 w-full rounded-xl border border-cyan-300/20 bg-black/40 p-3 text-white placeholder:text-white/40"
+            placeholder="Type or speak a phrase... (e.g., Hello, how are you?)"
             value={transcript}
             onChange={(e) => setTranscript(e.target.value)}
-            aria-label="Live transcript input"
           />
           <div className="flex flex-wrap gap-2">
-            <Button onClick={() => void translate()} className="flex-1" size="lg" aria-live="polite">
+            <Button onClick={() => void translate()} className="flex-1" size="lg">
               {chunk.processing ? "Processing..." : "Translate to ISL"}
             </Button>
             <Button
@@ -140,7 +193,7 @@ export default function TranslatorPage() {
                 })
               }
             >
-              {speech.listening ? "Listening…" : "Mic"}
+              {speech.listening ? "Listening…" : "🎤"}
             </Button>
             {speech.supported && speech.listening && (
               <Button variant="outline" size="lg" onClick={() => speech.stopListening()}>
@@ -167,10 +220,6 @@ export default function TranslatorPage() {
               value={speed}
               onChange={(e) => setSpeed(Number(e.target.value))}
               className="w-full"
-              aria-valuemin={0.5}
-              aria-valuemax={2}
-              aria-valuenow={speed}
-              aria-label="Signing speed multiplier"
             />
           </div>
           <div>
@@ -208,56 +257,20 @@ export default function TranslatorPage() {
           </div>
           <Button
             type="button"
-            className="w-full bg-gradient-to-r from-rose-600 to-red-600 py-6 text-lg font-semibold text-white shadow-lg shadow-rose-900/40 hover:brightness-110"
-            aria-pressed={emergencyMode}
+            className="w-full bg-gradient-to-r from-rose-600 to-red-600 py-6 text-lg font-semibold text-white"
             onClick={() => setEmergencyMode((v) => !v)}
           >
-            {emergencyMode ? "Exit emergency signing" : "Emergency mode — faster, emphatic"}
+            {emergencyMode ? "Exit emergency signing" : "🚨 Emergency mode"}
           </Button>
           <div className="rounded-xl border border-cyan-300/20 bg-cyan-300/5 p-3 text-xs text-cyan-100">
-            <p className="mono uppercase tracking-wider text-cyan-300/85">Learning mode</p>
-            <div className="mt-2 flex flex-wrap gap-2">
-              <Button variant={learningSlowMo === 1 ? "default" : "outline"} className="h-8 px-3 text-xs" onClick={() => setLearningSlowMo(1)}>
-                1× study
-              </Button>
-              <Button variant={learningSlowMo === 0.5 ? "default" : "outline"} className="h-8 px-3 text-xs" onClick={() => setLearningSlowMo(0.5)}>
-                0.5× slow
-              </Button>
-              <Button variant={learningSlowMo === 0.25 ? "default" : "outline"} className="h-8 px-3 text-xs" onClick={() => setLearningSlowMo(0.25)}>
-                0.25× slow
-              </Button>
-              <Button variant={learningMirror ? "default" : "outline"} className="h-8 px-3 text-xs" onClick={() => setLearningMirror((v) => !v)}>
-                Mirror avatar
-              </Button>
-            </div>
-            <p className="mt-2 text-[11px] text-white/50">
-              Mirror flips the rig on X for practice. Replace procedural clips with per-letter mocap to teach true
-              handshapes.
-            </p>
-          </div>
-          <div className="rounded-xl border border-white/10 p-3 text-xs">
-            <label className="block text-white/60">Avatar hue ({Math.round(appearanceHue * 100)}%)</label>
-            <input
-              type="range"
-              min={0}
-              max={1}
-              step={0.02}
-              value={appearanceHue}
-              onChange={(e) => setAppearanceHue(Number(e.target.value))}
-              className="mt-1 w-full"
-              aria-label="Avatar color hue shift"
-            />
-          </div>
-          <div className="rounded-xl border border-cyan-300/20 bg-cyan-300/5 p-3 text-xs text-cyan-100">
             <p className="mono uppercase tracking-wider text-cyan-300/85">Fallback visualization</p>
-            <p className="mt-1">✓ Direct Match</p>
-            <p>◎ Semantic Match</p>
-            <p>→ Fingerspell (3D wrist poses)</p>
+            <p className="mt-1">✓ Direct Match &nbsp;|&nbsp; ◎ Semantic Match &nbsp;|&nbsp; → Fingerspell</p>
           </div>
         </Card>
 
-        <Card className={`space-y-3 p-5 shadow-2xl ${glow} ${emergencyMode ? "animate-pulse ring-2 ring-rose-500/70" : ""}`} role="region" aria-label="3D avatar signing">
-          <h2 className="text-xl font-semibold text-cyan-100">3D Avatar (VRM + Mixer)</h2>
+        {/* Center Panel - Avatar */}
+        <Card className={`space-y-3 p-5 shadow-2xl ${glow} ${emergencyMode ? "animate-pulse ring-2 ring-rose-500/70" : ""}`}>
+          <h2 className="text-xl font-semibold text-cyan-100">3D Avatar Signing</h2>
           <AvatarStage
             sentiment={displaySentiment}
             lowBandwidth={lowBandwidth}
@@ -269,6 +282,7 @@ export default function TranslatorPage() {
             learningMirror={learningMirror}
             appearanceHue={appearanceHue}
             highContrast={highContrast}
+            avatarUrl={avatarUrl}
             onHudUpdate={onHudUpdate}
             onCanvasReady={(c) => {
               canvasRef.current = c;
@@ -277,23 +291,18 @@ export default function TranslatorPage() {
           <SigningHud hud={hud} gloss={chunk.gloss} unknownWords={chunk.unknownWords} lastWasSpell={lastSpell} />
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" className="h-8 px-3 text-xs" onClick={() => (recorder.recording ? recorder.stop() : recorder.start(canvasRef.current))}>
-              {recorder.recording ? "Stop recording" : "Record signing (WebM)"}
+              {recorder.recording ? "Stop recording" : "Record signing"}
             </Button>
             {recorder.lastBlobUrl && (
               <a className="h-8 rounded-lg border border-cyan-300/40 px-3 py-1.5 text-xs text-cyan-100" href={recorder.lastBlobUrl} download="signbridge-session.webm">
-                Download last clip
+                Download
               </a>
             )}
           </div>
-          <p className="text-sm text-white/70">
-            Animations are procedural keyframes on VRM humanoid bones (wave, point, raise hand, etc.). Add Mixamo GLB
-            via <code className="text-cyan-200">NEXT_PUBLIC_GLTF_FALLBACK_URL</code> to play embedded FBX→GLB tracks
-            named after gloss tokens.
-          </p>
           <div className="grid gap-2 sm:grid-cols-3">
             {[
               ["Mode", SENTIMENT_THEME[displaySentiment].label],
-              ["Mixer", hud.phase.toUpperCase()],
+              ["Status", hud.phase.toUpperCase()],
               ["Speed", `${speed.toFixed(1)}×`],
             ].map(([k, v]) => (
               <div key={k} className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs">
@@ -304,6 +313,7 @@ export default function TranslatorPage() {
           </div>
         </Card>
 
+        {/* Right Panel - Gloss + Analysis with Flag Sign */}
         <Card className="space-y-3 p-5" role="region" aria-label="Gloss and analysis">
           <h2 className="text-xl font-semibold text-cyan-100">Gloss + AI Analysis</h2>
           <p className="rounded-xl border border-cyan-300/20 bg-black/40 p-3 text-sm text-white/80">
@@ -316,10 +326,7 @@ export default function TranslatorPage() {
               </span>
             ))}
           </div>
-          <p className="text-sm">
-            Sentiment: {chunk.sentiment}
-            {chunk.sentimentFromGrok ? " (from Grok JSON)" : " (heuristic / fallback)"}
-          </p>
+          <p className="text-sm text-white/70">Sentiment: {chunk.sentiment}</p>
           <div>
             <div className="mb-1 flex items-center justify-between text-xs">
               <span>Confidence</span>
@@ -330,27 +337,16 @@ export default function TranslatorPage() {
                 className="h-2 rounded-full bg-gradient-to-r from-emerald-300 to-cyan-300"
                 initial={{ width: 0 }}
                 animate={{ width: `${confidence}%` }}
-                transition={{ duration: 0.35 }}
               />
             </div>
           </div>
           <p className="text-sm text-amber-300">
             Unknown words: {chunk.unknownWords.length ? chunk.unknownWords.join(", ") : "None"}
           </p>
-          <div className="max-h-28 overflow-y-auto rounded-xl border border-white/10 bg-black/30 p-2 text-[11px] text-white/55">
-            <p className="mono uppercase tracking-wider text-white/40">Session log</p>
-            {sessionLog.length === 0 ? (
-              <p className="mt-1">No translations yet.</p>
-            ) : (
-              sessionLog.map((row) => (
-                <p key={row.t} className="mt-1 font-mono text-[10px] text-cyan-200/80">
-                  {row.t}: {row.gloss.join(" · ")}
-                </p>
-              ))
-            )}
-          </div>
+          
+          {/* Flag Sign Feature - RESTORED */}
           <textarea
-            className="focus-ring h-20 w-full rounded-xl border bg-black/40 p-2 text-sm"
+            className="focus-ring h-20 w-full rounded-xl border border-cyan-300/20 bg-black/40 p-2 text-sm text-white placeholder:text-white/40"
             placeholder="Flag this sign (optional feedback)"
             value={feedback}
             onChange={(e) => setFeedback(e.target.value)}
@@ -369,6 +365,7 @@ export default function TranslatorPage() {
           >
             Flag This Sign
           </Button>
+          
           {!!error && <p className="text-sm text-rose-300">{error}</p>}
         </Card>
       </div>

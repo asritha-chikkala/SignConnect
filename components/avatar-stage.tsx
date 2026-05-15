@@ -34,6 +34,8 @@ export type AvatarStageProps = {
   /** 0–1 hue shift for outfit/skin tint (demo). */
   appearanceHue?: number;
   highContrast?: boolean;
+  // Add to the AvatarStageProps interface
+  avatarUrl?: string;
   onHudUpdate?: (state: AvatarHudState) => void;
   onCanvasReady?: (canvas: HTMLCanvasElement | null) => void;
   onLoadStatus?: (phase: "loading" | "ready" | "error", message?: string) => void;
@@ -81,9 +83,15 @@ async function fetchModelBuffer(modelUrl: string): Promise<ArrayBuffer> {
   return promise;
 }
 
-function vrmModelUrls(): string[] {
+// Replace the vrmModelUrls function with this:
+function vrmModelUrls(customUrl?: string): string[] {
   const fromEnv = process.env.NEXT_PUBLIC_VRM_MODEL_URL?.trim();
-  const urls = [...(fromEnv ? [fromEnv] : []), "/avatar.vrm", "/models/7469932817343173615.vrm", "/api/vrm"];
+  const urls = [];
+  
+  if (customUrl) urls.push(customUrl);
+  if (fromEnv) urls.push(fromEnv);
+  urls.push("/avatar.vrm", "/models/avatar.vrm", "/api/vrm");
+  
   return [...new Set(urls)];
 }
 
@@ -164,6 +172,7 @@ export function AvatarStage({
   learningMirror = false,
   appearanceHue = 0,
   highContrast = false,
+  avatarUrl,
   onHudUpdate,
   onCanvasReady,
   onLoadStatus,
@@ -334,7 +343,8 @@ export function AvatarStage({
       const glbUrl = process.env.NEXT_PUBLIC_GLTF_FALLBACK_URL || "";
 
       let lastError: unknown;
-      for (const vrmUrl of vrmModelUrls()) {
+      const urls = vrmModelUrls(avatarUrl);
+      for (const vrmUrl of urls) {
         try {
           const buffer = await fetchModelBuffer(vrmUrl);
           if (cancelled) return;

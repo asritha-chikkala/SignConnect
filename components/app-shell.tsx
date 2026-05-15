@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { NeuralBackground } from "@/components/neural-background";
 
 const nav = [
+  { href: "/", label: "Home" },           // ADD THIS - Home first
   { href: "/translator", label: "Translator" },
   { href: "/dashboard", label: "Dashboard" },
   { href: "/practice", label: "Practice" },
@@ -63,8 +64,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </motion.main>
       </AnimatePresence>
 
+      {/* Bottom mobile navigation - also update this */}
       <nav
-        className="fixed inset-x-2 bottom-2 z-50 grid grid-cols-5 gap-1 rounded-2xl border border-cyan-300/20 bg-black/70 p-1 backdrop-blur-xl md:hidden"
+        className="fixed inset-x-2 bottom-2 z-50 grid grid-cols-6 gap-1 rounded-2xl border border-cyan-300/20 bg-black/70 p-1 backdrop-blur-xl md:hidden"
         aria-label="Bottom navigation"
       >
         {nav.map((item) => (
@@ -77,7 +79,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               pathname === item.href && "bg-cyan-300/15 text-cyan-200",
             )}
           >
-            {item.label}
+            {item.label === "Home" ? "🏠" : item.label === "Emergency" ? "⚠️" : item.label.charAt(0)}
           </Link>
         ))}
       </nav>
