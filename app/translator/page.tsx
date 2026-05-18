@@ -17,6 +17,8 @@ import { useTranslatorHotkeys } from "@/hooks/use-translator-hotkeys";
 import { useRecordCanvas } from "@/hooks/use-record-canvas";
 import type { TranslationChunk } from "@/types";
 import type { AvatarHudState } from "@/lib/gloss-sign-plan";
+import { englishToISL } from "@/lib/isl-sentence-builder";
+
 
 const AvatarStage = dynamic(
   () => import("@/components/avatar-stage").then((mod) => mod.AvatarStage),
@@ -100,29 +102,42 @@ export default function TranslatorPage() {
     localStorage.setItem("selectedAvatarUrl", avatar.vrmUrl);
   };
 
-  const translate = useCallback(async () => {
-    if (!transcript.trim()) return;
+  
+const translate = useCallback(async () => {
+  if (!transcript.trim()) return;
+  
+  setError("");
+  setChunk((prev) => ({ ...prev, processing: true }));
+  
+  try {
+    // First, convert English to ISL grammar
+    const islSentence = englishToISL(transcript);
     
-    setError("");
-    setChunk((prev) => ({ ...prev, processing: true }));
-    try {
-      const res = await fetch("/api/translate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ transcript }),
-      });
-      if (!res.ok) throw new Error("Translation failed");
-      const data = (await res.json()) as TranslationChunk;
-      setChunk(data);
-      setSignReplayKey((k) => k + 1);
-      const stamp = new Date().toISOString();
-      setSessionLog((prev) => [...prev.slice(-19), { t: stamp, gloss: data.gloss }]);
-    } catch {
-      setError("API failure: translation service unavailable.");
-    } finally {
-      setChunk((prev) => ({ ...prev, processing: false }));
+    // Use the ISL gloss from grammar converter as fallback
+    const res = await fetch("/api/translate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ transcript: islSentence.islWordOrder.join(" ") }),
+    });
+    
+    if (!res.ok) throw new Error("Translation failed");
+    const data = (await res.json()) as TranslationChunk;
+    
+    // Enhance with grammar converter if needed
+    if (data.gloss.length === 0 && islSentence.glossTokens.length > 0) {
+      data.gloss = islSentence.glossTokens;
     }
-  }, [transcript]);
+    
+    setChunk(data);
+    setSignReplayKey((k) => k + 1);
+    const stamp = new Date().toISOString();
+    setSessionLog((prev) => [...prev.slice(-19), { t: stamp, gloss: data.gloss }]);
+  } catch {
+    setError("API failure: translation service unavailable.");
+  } finally {
+    setChunk((prev) => ({ ...prev, processing: false }));
+  }
+}, [transcript]);
 
   useTranslatorHotkeys(
     {

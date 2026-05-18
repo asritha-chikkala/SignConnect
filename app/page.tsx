@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { AppShell } from "@/components/app-shell";
 import { Card } from "@/components/ui/card";
+import { BookOpen } from "lucide-react";
 
 export default function Home() {
   const features = [
@@ -43,10 +44,18 @@ export default function Home() {
             SignBridge transforms live speech into expressive Indian Sign Language using Grok gloss intelligence, 
             semantic fallback mapping, and cinematic VRM signing.
           </p>
+          
+          {/* Buttons - Only ONE section, includes Educational Mode */}
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Link href="/translator" prefetch={false}>
               <Button size="lg" className="bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600">
                 Start Translating →
+              </Button>
+            </Link>
+            <Link href="/learn" prefetch={false}>
+              <Button size="lg" variant="outline" className="border-cyan-500/50 hover:bg-cyan-500/10">
+                <BookOpen className="w-4 h-4 mr-2" />
+                Educational Mode
               </Button>
             </Link>
             <Link href="/demo" prefetch={false}>
