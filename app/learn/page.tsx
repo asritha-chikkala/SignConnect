@@ -5,19 +5,7 @@ import { AppShell } from "@/components/app-shell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AvatarStage } from "@/components/avatar-stage";
-import { 
-  Upload, 
-  FileText, 
-  Send, 
-  Sparkles, 
-  Trash2, 
-  Copy, 
-  Check,
-  Bot,
-  History,
-  Loader2,
-  X
-} from "lucide-react";
+import { Upload, FileText, Send, Sparkles, Trash2, Copy, Check, Bot, Loader2, X } from "lucide-react";
 
 interface Message {
   id: string;
@@ -30,69 +18,51 @@ interface Message {
 export default function LearnPage() {
   const [messages, setMessages] = useState<Message[]>([
     {
-      id: "1",
+      id: "welcome",
       role: "assistant",
-      content: "Hello! I'm your AI tutor. I can help you learn any subject. Upload a PDF, textbook, or notes, and I'll explain concepts in sign language. What would you like to learn today?",
+      content: "Hello! I'm your AI tutor. Upload a PDF or ask me a question, and I'll explain concepts in sign language!",
       timestamp: new Date(),
     },
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [file, setFile] = useState<File | null>(null);
   const [fileContent, setFileContent] = useState("");
   const [fileName, setFileName] = useState("");
-  const [isCopied, setIsCopied] = useState(false);
-  const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const [signReplayKey, setSignReplayKey] = useState(0);
   const [currentGloss, setCurrentGloss] = useState<string[]>([]);
-  const [mounted, setMounted] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Fix hydration: only show timestamps after mount
   useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
   }, [messages]);
 
-  // Handle file upload
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const uploadedFile = e.target.files?.[0];
-    if (!uploadedFile) return;
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-    setFile(uploadedFile);
-    setFileName(uploadedFile.name);
-
+    setFileName(file.name);
     const reader = new FileReader();
-    reader.onload = async (event) => {
+    reader.onload = (event) => {
       const content = event.target?.result as string;
       setFileContent(content);
-      
-      const contextMessage = `📄 I've uploaded "${uploadedFile.name}". Please help me understand this content.`;
-      setInput(contextMessage);
+      setInput(`Please explain this document: "${file.name}"`);
     };
-    reader.readAsText(uploadedFile);
+    reader.readAsText(file);
   };
 
   const clearFile = () => {
-    setFile(null);
     setFileContent("");
     setFileName("");
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const copyMessage = (content: string, messageId: string) => {
+  const copyMessage = (content: string, id: string) => {
     navigator.clipboard.writeText(content);
-    setCopiedMessageId(messageId);
-    setTimeout(() => setCopiedMessageId(null), 2000);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
   };
 
   const clearChat = () => {
@@ -109,50 +79,44 @@ export default function LearnPage() {
   const sendMessage = async () => {
     if (!input.trim() && !fileContent) return;
 
-    const userMessage: Message = {
+    const userMsg: Message = {
       id: Date.now().toString(),
       role: "user",
-      content: input || (fileContent ? `Please explain the content of "${fileName}"` : ""),
+      content: input || `Please explain "${fileName}"`,
       timestamp: new Date(),
     };
     
-    setMessages(prev => [...prev, userMessage]);
+    setMessages(prev => [...prev, userMsg]);
     setInput("");
     setIsLoading(true);
 
     try {
-      const context = fileContent 
-        ? `Context from uploaded file "${fileName}":\n${fileContent.slice(0, 3000)}\n\nUser question: ${input || "Please summarize this content"}`
-        : input;
-
-      const response = await fetch("/api/learn/chat", {
+      const res = await fetch("/api/learn/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
-          message: context,
-          history: messages.slice(-5).map(m => ({ role: m.role, content: m.content }))
+          message: input || "Please explain this content",
+          fileContent: fileContent || null,
+          fileName: fileName || null
         }),
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
+      const data = await res.json();
+      
+      if (!res.ok) throw new Error(data.error || "API error");
+      
       const assistantContent = data.response;
 
-      const glossResponse = await fetch("/api/translate", {
+      const glossRes = await fetch("/api/translate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ transcript: assistantContent.slice(0, 500) }),
       });
       
       let glossData = { gloss: [] };
-      if (glossResponse.ok) {
-        glossData = await glossResponse.json();
-      }
+      if (glossRes.ok) glossData = await glossRes.json();
 
-      const assistantMessage: Message = {
+      const assistantMsg: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
         content: assistantContent,
@@ -160,22 +124,19 @@ export default function LearnPage() {
         timestamp: new Date(),
       };
       
-      setMessages(prev => [...prev, assistantMessage]);
+      setMessages(prev => [...prev, assistantMsg]);
       setCurrentGloss(glossData.gloss || []);
       setSignReplayKey(prev => prev + 1);
+      clearFile();
       
-      if (fileContent) {
-        clearFile();
-      }
     } catch (error) {
-      console.error("Chat error:", error);
-      const errorMessage: Message = {
+      console.error(error);
+      setMessages(prev => [...prev, {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: "Sorry, I encountered an error. Please make sure the API is configured correctly and try again.",
+        content: "Sorry, I encountered an error. Please check your API configuration.",
         timestamp: new Date(),
-      };
-      setMessages(prev => [...prev, errorMessage]);
+      }]);
     } finally {
       setIsLoading(false);
     }
@@ -188,50 +149,27 @@ export default function LearnPage() {
     }
   };
 
-  // Format time safely (only on client)
-  const formatTime = (date: Date) => {
-    if (!mounted) return "";
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  };
-
   return (
     <AppShell>
-      <div className="flex h-[calc(100vh-120px)] gap-4">
+      <div className="flex flex-col lg:flex-row h-[calc(100vh-120px)] gap-4">
         {/* Main Chat Area */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-h-0">
           {/* Header */}
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-4 flex-shrink-0">
             <div>
               <h1 className="text-2xl font-bold text-cyan-100" style={{ fontFamily: "var(--font-syne)" }}>
                 🤟 AI Tutor with Sign Language
               </h1>
-              <p className="text-white/50 text-sm mt-1">
-                Upload any PDF/textbook and ask questions — the avatar will sign the answers in ISL
-              </p>
+              <p className="text-white/50 text-sm">Upload any PDF/textbook and ask questions — the avatar will sign the answers in ISL</p>
             </div>
-            <div className="flex gap-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="border-white/10"
-              >
-                <History className="w-4 h-4 mr-2" />
-                History
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={clearChat}
-                className="border-white/10 text-red-400 hover:text-red-300"
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
-            </div>
+            <Button variant="outline" size="sm" onClick={clearChat} className="border-white/10">
+              <Trash2 className="w-4 h-4" />
+            </Button>
           </div>
 
           {/* File Upload Bar */}
-          <div className="mb-4">
-            <div className="flex gap-2 items-center">
+          <div className="mb-4 flex-shrink-0">
+            <div className="flex gap-2 items-center flex-wrap">
               <input
                 ref={fileInputRef}
                 type="file"
@@ -265,48 +203,45 @@ export default function LearnPage() {
           </div>
 
           {/* Messages Container */}
-          <div className="flex-1 overflow-y-auto mb-4 space-y-4 pr-2">
-            {messages.map((message) => (
+          <div className="flex-1 overflow-y-auto mb-4 space-y-4 pr-2 min-h-0">
+            {messages.map((msg) => (
               <div
-                key={message.id}
-                className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+                key={msg.id}
+                className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 <div
                   className={`max-w-[80%] rounded-2xl p-4 ${
-                    message.role === "user"
+                    msg.role === "user"
                       ? "bg-gradient-to-r from-cyan-500 to-purple-500 text-white"
                       : "bg-white/10 border border-white/10 text-white"
                   }`}
                 >
-                  <div className="flex items-start gap-2 mb-2">
-                    {message.role === "assistant" && (
-                      <Bot className="w-5 h-5 text-cyan-400" />
+                  <div className="flex items-start gap-2">
+                    {msg.role === "assistant" && (
+                      <Bot className="w-5 h-5 text-cyan-400 flex-shrink-0" />
                     )}
-                    <span className="text-xs opacity-70" suppressHydrationWarning>
-                      {formatTime(message.timestamp)}
-                    </span>
-                    {message.role === "assistant" && (
+                    <p className="text-sm whitespace-pre-wrap flex-1">{msg.content}</p>
+                    {msg.role === "assistant" && (
                       <button
-                        onClick={() => copyMessage(message.content, message.id)}
-                        className="ml-auto opacity-50 hover:opacity-100"
+                        onClick={() => copyMessage(msg.content, msg.id)}
+                        className="opacity-50 hover:opacity-100 flex-shrink-0"
                       >
-                        {copiedMessageId === message.id ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                        {copiedId === msg.id ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
                       </button>
                     )}
                   </div>
-                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                  {message.gloss && message.gloss.length > 0 && (
+                  {msg.gloss && msg.gloss.length > 0 && (
                     <div className="mt-2 pt-2 border-t border-white/20">
                       <p className="text-[10px] opacity-50 mb-1">Signing:</p>
                       <div className="flex flex-wrap gap-1">
-                        {message.gloss.slice(0, 8).map((token, i) => (
+                        {msg.gloss.slice(0, 6).map((token, i) => (
                           <span key={i} className="text-[10px] px-2 py-0.5 rounded-full bg-white/20">
                             {token}
                           </span>
                         ))}
-                        {message.gloss.length > 8 && (
+                        {msg.gloss.length > 6 && (
                           <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/20">
-                            +{message.gloss.length - 8}
+                            +{msg.gloss.length - 6}
                           </span>
                         )}
                       </div>
@@ -320,7 +255,7 @@ export default function LearnPage() {
                 <div className="bg-white/10 border border-white/10 rounded-2xl p-4">
                   <div className="flex items-center gap-2">
                     <Loader2 className="w-4 h-4 text-cyan-400 animate-spin" />
-                    <span className="text-sm text-white/60">Avatar is signing a response...</span>
+                    <span className="text-sm text-white/60">Avatar is preparing a response...</span>
                   </div>
                 </div>
               </div>
@@ -329,7 +264,7 @@ export default function LearnPage() {
           </div>
 
           {/* Input Area */}
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-shrink-0">
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -350,7 +285,7 @@ export default function LearnPage() {
         </div>
 
         {/* Avatar Sidebar */}
-        <div className="w-96 flex-shrink-0">
+        <div className="w-full lg:w-96 flex-shrink-0">
           <Card className="h-full p-4 bg-gradient-to-br from-black/40 to-black/20 border-white/10 flex flex-col">
             <div className="text-center mb-3">
               <h3 className="text-lg font-semibold text-cyan-100">🤟 Sign Language Avatar</h3>

@@ -4,22 +4,34 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Check, Sparkles, Users, Bot, Heart } from "lucide-react";
+import { ChevronRight, Check, Sparkles, Heart, Clock } from "lucide-react";
 
 export type AvatarStyle = {
   id: string;
   name: string;
-  category: "male" | "female" | "ghibli" | "cyberpunk" | "fantasy" | "professional";
+  category: "default" | "male" | "female";
   vrmUrl: string;
   previewEmoji: string;
   previewColor: string;
   description: string;
   traits: string[];
+  isComingSoon?: boolean;
 };
 
+// ONLY 4 WORKING AVATARS + Coming Soon for others
 export const avatarStyles: AvatarStyle[] = [
   {
-    id: "male-professional-1",
+    id: "default",
+    name: "Default Avatar",
+    category: "default",
+    vrmUrl: "/avatars/default.vrm",
+    previewEmoji: "🤟",
+    previewColor: "from-cyan-400 to-blue-500",
+    description: "Default SignBridge avatar",
+    traits: ["Balanced", "Clear signing", "Friendly"]
+  },
+  {
+    id: "male-professional",
     name: "Arjun - Professional",
     category: "male",
     vrmUrl: "/avatars/male-professional.vrm",
@@ -29,17 +41,7 @@ export const avatarStyles: AvatarStyle[] = [
     traits: ["Professional", "Friendly", "Clear signing"]
   },
   {
-    id: "male-casual-1",
-    name: "Rahul - Casual",
-    category: "male",
-    vrmUrl: "/avatars/male-casual.vrm",
-    previewEmoji: "🧑",
-    previewColor: "from-cyan-400 to-cyan-600",
-    description: "Relaxed and approachable avatar",
-    traits: ["Casual", "Approachable", "Expressive"]
-  },
-  {
-    id: "female-professional-1",
+    id: "female-professional",
     name: "Priya - Professional",
     category: "female",
     vrmUrl: "/avatars/female-professional.vrm",
@@ -49,7 +51,7 @@ export const avatarStyles: AvatarStyle[] = [
     traits: ["Elegant", "Precise", "Trustworthy"]
   },
   {
-    id: "female-casual-1",
+    id: "female-casual",
     name: "Ananya - Casual",
     category: "female",
     vrmUrl: "/avatars/female-casual.vrm",
@@ -58,96 +60,58 @@ export const avatarStyles: AvatarStyle[] = [
     description: "Warm and engaging personality",
     traits: ["Warm", "Engaging", "Friendly"]
   },
+  // COMING SOON - Disabled but visible
   {
-    id: "ghibli-1",
-    name: "Chihiro Style",
-    category: "ghibli",
-    vrmUrl: "/avatars/ghibli-chihiro.vrm",
+    id: "male-casual-coming",
+    name: "Rahul - Casual",
+    category: "male",
+    vrmUrl: "",
+    previewEmoji: "🧑",
+    previewColor: "from-gray-400 to-gray-500",
+    description: "Coming Soon!",
+    traits: ["Coming soon", "More avatars"],
+    isComingSoon: true
+  },
+  {
+    id: "ghibli-coming",
+    name: "Ghibli Style",
+    category: "female",
+    vrmUrl: "",
     previewEmoji: "🌸",
-    previewColor: "from-amber-400 to-orange-400",
-    description: "Studio Ghibli inspired magical avatar",
-    traits: ["Magical", "Cute", "Expressive eyes"]
+    previewColor: "from-gray-400 to-gray-500",
+    description: "Coming Soon!",
+    traits: ["Coming soon", "More avatars"],
+    isComingSoon: true
   },
   {
-    id: "ghibli-2",
-    name: "Totoro Friend",
-    category: "ghibli",
-    vrmUrl: "/avatars/ghibli-totoro.vrm",
-    previewEmoji: "🍃",
-    previewColor: "from-green-400 to-emerald-400",
-    description: "Soft, nature-inspired character",
-    traits: ["Gentle", "Nature-loving", "Comforting"]
-  },
-  {
-    id: "cyberpunk-1",
-    name: "Neon Hunter",
-    category: "cyberpunk",
-    vrmUrl: "/avatars/cyberpunk-neon.vrm",
+    id: "cyberpunk-coming",
+    name: "Cyberpunk Style",
+    category: "male",
+    vrmUrl: "",
     previewEmoji: "⚡",
-    previewColor: "from-cyan-300 to-purple-500",
-    description: "Futuristic cyberpunk aesthetic",
-    traits: ["Futuristic", "Edgy", "High-tech"]
+    previewColor: "from-gray-400 to-gray-500",
+    description: "Coming Soon!",
+    traits: ["Coming soon", "More avatars"],
+    isComingSoon: true
   },
   {
-    id: "cyberpunk-2",
-    name: "Glitch Entity",
-    category: "cyberpunk",
-    vrmUrl: "/avatars/cyberpunk-glitch.vrm",
-    previewEmoji: "🌀",
-    previewColor: "from-fuchsia-400 to-blue-400",
-    description: "Holographic digital avatar",
-    traits: ["Digital", "Holographic", "Dynamic"]
-  },
-  {
-    id: "fantasy-1",
-    name: "Forest Spirit",
-    category: "fantasy",
-    vrmUrl: "/avatars/fantasy-forest.vrm",
+    id: "fantasy-coming",
+    name: "Fantasy Style",
+    category: "female",
+    vrmUrl: "",
     previewEmoji: "🧚",
-    previewColor: "from-emerald-400 to-teal-400",
-    description: "Ethereal forest guardian",
-    traits: ["Ethereal", "Mystical", "Calm"]
-  },
-  {
-    id: "fantasy-2",
-    name: "Celestial Being",
-    category: "fantasy",
-    vrmUrl: "/avatars/fantasy-celestial.vrm",
-    previewEmoji: "✨",
-    previewColor: "from-indigo-400 to-purple-400",
-    description: "Star-touched magical being",
-    traits: ["Magical", "Starry", "Peaceful"]
-  },
-  {
-    id: "professional-1",
-    name: "Dr. Sarah",
-    category: "professional",
-    vrmUrl: "/avatars/professional-doctor.vrm",
-    previewEmoji: "👩‍⚕️",
-    previewColor: "from-slate-400 to-gray-500",
-    description: "Medical professional style",
-    traits: ["Trustworthy", "Calm", "Authoritative"]
-  },
-  {
-    id: "professional-2",
-    name: "Professor James",
-    category: "professional",
-    vrmUrl: "/avatars/professional-teacher.vrm",
-    previewEmoji: "👨‍🏫",
-    previewColor: "from-amber-500 to-orange-500",
-    description: "Educational instructor style",
-    traits: ["Knowledgeable", "Patient", "Clear"]
+    previewColor: "from-gray-400 to-gray-500",
+    description: "Coming Soon!",
+    traits: ["Coming soon", "More avatars"],
+    isComingSoon: true
   }
 ];
 
 export const categories = [
   { id: "all", name: "All", icon: "🎨" },
+  { id: "default", name: "Default", icon: "🤟" },
   { id: "male", name: "Male", icon: "👨" },
-  { id: "female", name: "Female", icon: "👩" },
-  { id: "ghibli", name: "Ghibli", icon: "🌸" },
-  { id: "cyberpunk", name: "Cyberpunk", icon: "⚡" },
-  { id: "fantasy", name: "Fantasy", icon: "🧚" },
-  { id: "professional", name: "Professional", icon: "💼" }
+  { id: "female", name: "Female", icon: "👩" }
 ];
 
 interface AvatarSelectorProps {
@@ -161,22 +125,25 @@ export function AvatarSelector({ onSelectAvatar, currentAvatarId, onClose }: Ava
   const [selectedAvatar, setSelectedAvatar] = useState<string | null>(currentAvatarId || null);
   const [isOpen, setIsOpen] = useState(false);
 
-  const filteredAvatars = avatarStyles.filter(avatar => 
+  const filteredAvatars = avatarStyles.filter(avatar =>
     selectedCategory === "all" || avatar.category === selectedCategory
   );
 
   const handleSelect = (avatar: AvatarStyle) => {
+    if (avatar.isComingSoon) return; // Don't allow selection of coming soon avatars
+    
     setSelectedAvatar(avatar.id);
     onSelectAvatar(avatar);
     localStorage.setItem("selectedAvatar", avatar.id);
     localStorage.setItem("selectedAvatarUrl", avatar.vrmUrl);
+    setIsOpen(false); // Close modal after selection
   };
 
   // Load saved avatar on mount
   useEffect(() => {
     const savedAvatarId = localStorage.getItem("selectedAvatar");
     if (savedAvatarId) {
-      const saved = avatarStyles.find(a => a.id === savedAvatarId);
+      const saved = avatarStyles.find(a => a.id === savedAvatarId && !a.isComingSoon);
       if (saved && savedAvatarId !== currentAvatarId) {
         setSelectedAvatar(savedAvatarId);
         onSelectAvatar(saved);
@@ -200,7 +167,7 @@ export function AvatarSelector({ onSelectAvatar, currentAvatarId, onClose }: Ava
       <AnimatePresence>
         {isOpen && (
           <>
-            <div 
+            <div
               className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
               onClick={() => setIsOpen(false)}
             />
@@ -208,7 +175,7 @@ export function AvatarSelector({ onSelectAvatar, currentAvatarId, onClose }: Ava
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[90vw] max-w-5xl max-h-[85vh] overflow-hidden"
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[90vw] max-w-4xl max-h-[85vh] overflow-hidden"
             >
               <Card className="bg-[#0a0f1f] border border-cyan-300/30 rounded-2xl overflow-hidden">
                 {/* Header */}
@@ -253,20 +220,28 @@ export function AvatarSelector({ onSelectAvatar, currentAvatarId, onClose }: Ava
                     {filteredAvatars.map((avatar) => (
                       <motion.div
                         key={avatar.id}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
+                        whileHover={avatar.isComingSoon ? {} : { scale: 1.02 }}
+                        whileTap={avatar.isComingSoon ? {} : { scale: 0.98 }}
                         className={`cursor-pointer rounded-xl p-4 transition-all ${
-                          selectedAvatar === avatar.id
+                          avatar.isComingSoon
+                            ? "opacity-60 cursor-not-allowed bg-white/5 border border-white/10"
+                            : selectedAvatar === avatar.id
                             ? "bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border-2 border-cyan-400"
                             : "bg-white/5 border border-white/10 hover:bg-white/10"
                         }`}
                         onClick={() => handleSelect(avatar)}
                       >
-                        <div className={`w-20 h-20 mx-auto rounded-full bg-gradient-to-br ${avatar.previewColor} flex items-center justify-center text-4xl shadow-lg mb-3`}>
+                        <div className={`w-20 h-20 mx-auto rounded-full bg-gradient-to-br ${avatar.previewColor} flex items-center justify-center text-4xl shadow-lg mb-3 relative`}>
                           {avatar.previewEmoji}
+                          {avatar.isComingSoon && (
+                            <div className="absolute -top-2 -right-2 bg-amber-500/90 text-white text-[10px] px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
+                              <Clock className="w-2 h-2" />
+                              Soon
+                            </div>
+                          )}
                         </div>
                         <h3 className="text-center font-medium text-white text-sm">{avatar.name}</h3>
-                        <p className="text-center text-xs text-white/40 mt-1">{avatar.description.substring(0, 35)}...</p>
+                        <p className="text-center text-xs text-white/40 mt-1">{avatar.description}</p>
                         <div className="flex flex-wrap gap-1 justify-center mt-2">
                           {avatar.traits.slice(0, 2).map((trait) => (
                             <span key={trait} className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white/50">
@@ -274,7 +249,7 @@ export function AvatarSelector({ onSelectAvatar, currentAvatarId, onClose }: Ava
                             </span>
                           ))}
                         </div>
-                        {selectedAvatar === avatar.id && (
+                        {selectedAvatar === avatar.id && !avatar.isComingSoon && (
                           <div className="absolute top-2 right-2">
                             <Check className="w-4 h-4 text-cyan-400" />
                           </div>

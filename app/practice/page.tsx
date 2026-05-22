@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AppShell } from "@/components/app-shell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AvatarStage } from "@/components/avatar-stage";  // ADD THIS
+import { AvatarStage } from "@/components/avatar-stage";
+import { avatarStyles } from "@/components/avatar-selector";
 
 const recap = [
   { label: "HELLO YOU", gloss: ["HELLO", "YOU"] },
@@ -17,6 +18,44 @@ export default function PracticePage() {
   const [speed, setSpeed] = useState(0.5);
   const [currentGloss, setCurrentGloss] = useState<string[]>([]);
   const [replayKey, setReplayKey] = useState(0);
+  const [avatarUrl, setAvatarUrl] = useState<string>("");
+  const [avatarKey, setAvatarKey] = useState(0);
+
+  // Load saved avatar on mount - use the same logic as translator
+  useEffect(() => {
+    const savedAvatarId = localStorage.getItem("selectedAvatar");
+    const savedAvatarUrl = localStorage.getItem("selectedAvatarUrl");
+    
+    if (savedAvatarId && savedAvatarUrl) {
+      const avatar = avatarStyles.find(a => a.id === savedAvatarId && !a.isComingSoon);
+      if (avatar) {
+        setAvatarUrl(savedAvatarUrl);
+        setAvatarKey(prev => prev + 1);
+        return;
+      }
+    }
+    
+    // Fallback to default avatar
+    const defaultAvatar = avatarStyles.find(a => a.id === "default");
+    if (defaultAvatar) {
+      setAvatarUrl(defaultAvatar.vrmUrl);
+      setAvatarKey(prev => prev + 1);
+    }
+  }, []);
+
+  // Listen for avatar changes from other pages
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const savedAvatarUrl = localStorage.getItem("selectedAvatarUrl");
+      if (savedAvatarUrl && savedAvatarUrl !== avatarUrl) {
+        setAvatarUrl(savedAvatarUrl);
+        setAvatarKey(prev => prev + 1);
+      }
+    };
+    
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, [avatarUrl]);
 
   const handleReplay = (gloss: string[]) => {
     setCurrentGloss(gloss);
@@ -25,15 +64,16 @@ export default function PracticePage() {
 
   return (
     <AppShell>
-      {/* ADD AVATAR AT THE TOP */}
       <div className="mb-6">
         <AvatarStage 
+          key={avatarKey}
           sentiment="neutral" 
           lowBandwidth={false}
           gloss={currentGloss}
           signReplayKey={replayKey}
           signingSpeed={speed}
           learningSlowMo={speed}
+          avatarUrl={avatarUrl}
           onLoadStatus={(phase, message) => console.log("Avatar:", phase, message)}
         />
       </div>

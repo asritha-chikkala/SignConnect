@@ -17,8 +17,6 @@ import { useTranslatorHotkeys } from "@/hooks/use-translator-hotkeys";
 import { useRecordCanvas } from "@/hooks/use-record-canvas";
 import type { TranslationChunk } from "@/types";
 import type { AvatarHudState } from "@/lib/gloss-sign-plan";
-import { englishToISL } from "@/lib/isl-sentence-builder";
-
 
 const AvatarStage = dynamic(
   () => import("@/components/avatar-stage").then((mod) => mod.AvatarStage),
@@ -26,6 +24,27 @@ const AvatarStage = dynamic(
 );
 
 const SENTIMENTS: Sentiment[] = ["neutral", "question", "urgent", "happy"];
+
+// Fallback gloss for common phrases
+const FALLBACK_GLOSS: Record<string, string[]> = {
+  "hello": ["HELLO"],
+  "hi": ["HELLO"],
+  "how are you": ["HOW", "YOU"],
+  "i need help": ["I", "NEED", "HELP"],
+  "help": ["HELP"],
+  "thank you": ["THANK", "YOU"],
+  "thanks": ["THANK"],
+  "yes": ["YES"],
+  "no": ["NO"],
+  "goodbye": ["GOODBYE"],
+  "where is hospital": ["WHERE", "HOSPITAL"],
+  "hospital": ["HOSPITAL"],
+  "doctor": ["DOCTOR"],
+  "pain": ["PAIN"],
+  "emergency": ["EMERGENCY"],
+  "please": ["PLEASE"],
+  "sorry": ["SORRY"],
+};
 
 export default function TranslatorPage() {
   const [transcript, setTranscript] = useState("");
@@ -71,24 +90,39 @@ export default function TranslatorPage() {
   const glow = useMemo(() => SENTIMENT_THEME[displaySentiment].glow, [displaySentiment]);
   const confidence = chunk.gloss.length ? Math.max(74, 96 - chunk.unknownWords.length * 8) : 0;
 
-  // Load saved avatar on mount
+  // Load saved avatar on mount - DEFAULT AVATAR FIRST
   useEffect(() => {
     const savedAvatarId = localStorage.getItem("selectedAvatar");
     const savedAvatarUrl = localStorage.getItem("selectedAvatarUrl");
+    
+    const defaultAvatar = avatarStyles.find(a => a.id === "default");
+    
     if (savedAvatarId && savedAvatarUrl) {
-      const avatar = avatarStyles.find(a => a.id === savedAvatarId);
+      const avatar = avatarStyles.find(a => a.id === savedAvatarId && !a.isComingSoon);
       if (avatar) {
         setSelectedAvatar(avatar);
         setAvatarUrl(savedAvatarUrl);
+        return;
       }
-    } else {
-      const defaultAvatar = avatarStyles.find(a => a.category === "ghibli") || avatarStyles[0];
+    }
+    
+    if (defaultAvatar) {
       setSelectedAvatar(defaultAvatar);
       setAvatarUrl(defaultAvatar.vrmUrl);
       localStorage.setItem("selectedAvatar", defaultAvatar.id);
       localStorage.setItem("selectedAvatarUrl", defaultAvatar.vrmUrl);
     }
   }, []);
+
+  // Force avatar to reload when avatarUrl changes
+  useEffect(() => {
+    if (avatarUrl) {
+      const timer = setTimeout(() => {
+        setSignReplayKey(prev => prev + 1);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [avatarUrl]);
 
   const onHudUpdate = useCallback((s: AvatarHudState) => {
     setHud(s);
@@ -102,42 +136,90 @@ export default function TranslatorPage() {
     localStorage.setItem("selectedAvatarUrl", avatar.vrmUrl);
   };
 
-  
-const translate = useCallback(async () => {
-  if (!transcript.trim()) return;
-  
-  setError("");
-  setChunk((prev) => ({ ...prev, processing: true }));
-  
-  try {
-    // First, convert English to ISL grammar
-    const islSentence = englishToISL(transcript);
+  function detectSentiment(text: string): Sentiment {
+    const lower = text.toLowerCase();
+    if (lower.includes("?")) return "question";
+    if (lower.includes("help") || lower.includes("emergency") || lower.includes("pain")) return "urgent";
+    if (lower.includes("thank") || lower.includes("love") || lower.includes("happy")) return "happy";
+    return "neutral";
+  }
+
+  function getGlossFromText(text: string): string[] {
+    const lowerText = text.toLowerCase().trim();
     
-    // Use the ISL gloss from grammar converter as fallback
-    const res = await fetch("/api/translate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ transcript: islSentence.islWordOrder.join(" ") }),
-    });
-    
-    if (!res.ok) throw new Error("Translation failed");
-    const data = (await res.json()) as TranslationChunk;
-    
-    // Enhance with grammar converter if needed
-    if (data.gloss.length === 0 && islSentence.glossTokens.length > 0) {
-      data.gloss = islSentence.glossTokens;
+    for (const [key, gloss] of Object.entries(FALLBACK_GLOSS)) {
+      if (lowerText.includes(key)) {
+        return gloss;
+      }
     }
     
-    setChunk(data);
-    setSignReplayKey((k) => k + 1);
-    const stamp = new Date().toISOString();
-    setSessionLog((prev) => [...prev.slice(-19), { t: stamp, gloss: data.gloss }]);
-  } catch {
-    setError("API failure: translation service unavailable.");
-  } finally {
-    setChunk((prev) => ({ ...prev, processing: false }));
+    const words = lowerText.split(/\s+/).filter(w => w.length > 0);
+    const glossTokens: string[] = [];
+    
+    for (const word of words) {
+      if (FALLBACK_GLOSS[word]) {
+        glossTokens.push(...FALLBACK_GLOSS[word]);
+      } else {
+        glossTokens.push(word.toUpperCase());
+      }
+    }
+    
+    return glossTokens.slice(0, 15);
   }
-}, [transcript]);
+
+  const translate = useCallback(async () => {
+    if (!transcript.trim()) return;
+    
+    setError("");
+    setChunk((prev) => ({ ...prev, processing: true }));
+    
+    try {
+      const fallbackGloss = getGlossFromText(transcript);
+      const sentiment = detectSentiment(transcript);
+      
+      let apiGloss: string[] = [];
+      let apiSuccess = false;
+      
+      try {
+        const res = await fetch("/api/translate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ transcript }),
+        });
+        
+        if (res.ok) {
+          const data = await res.json();
+          if (data.gloss && data.gloss.length > 0) {
+            apiGloss = data.gloss;
+            apiSuccess = true;
+          }
+        }
+      } catch (apiError) {
+        console.log("API unavailable, using fallback");
+      }
+      
+      const finalGloss = apiSuccess && apiGloss.length > 0 ? apiGloss : fallbackGloss;
+      
+      setChunk({
+        transcript: transcript,
+        gloss: finalGloss,
+        sentiment: sentiment,
+        unknownWords: [],
+        processing: false,
+        sentimentFromGrok: apiSuccess,
+      });
+      
+      setSignReplayKey((k) => k + 1);
+      const stamp = new Date().toISOString();
+      setSessionLog((prev) => [...prev.slice(-19), { t: stamp, gloss: finalGloss }]);
+      
+    } catch (err) {
+      setError("Translation failed. Please try again.");
+      setChunk((prev) => ({ ...prev, processing: false }));
+    } finally {
+      setChunk((prev) => ({ ...prev, processing: false }));
+    }
+  }, [transcript]);
 
   useTranslatorHotkeys(
     {
@@ -148,7 +230,7 @@ const translate = useCallback(async () => {
     true,
   );
 
-  const currentAvatarDisplay = selectedAvatar || avatarStyles[0];
+  const currentAvatarDisplay = selectedAvatar || avatarStyles.find(a => a.id === "default") || avatarStyles[0];
 
   return (
     <AppShell>
@@ -176,10 +258,10 @@ const translate = useCallback(async () => {
             Neural Translator
           </h1>
           <p className="mt-2 text-sm text-white/70">
-            English speech or text → ISL gloss → procedural VRM bone animations + fingerspelling for unknown tokens.
+            English speech or text → ISL gloss → Avatar signs in real-time
           </p>
           <p className="mt-2 text-[11px] text-white/45">
-            Type or speak a phrase, then click Translate. The avatar will sign your words.
+            Type a phrase and click Translate. The avatar will sign your words.
           </p>
         </Card>
       </div>
@@ -190,7 +272,7 @@ const translate = useCallback(async () => {
           <h2 className="text-xl font-semibold text-cyan-100">Speech Input</h2>
           <textarea
             className="focus-ring h-40 w-full rounded-xl border border-cyan-300/20 bg-black/40 p-3 text-white placeholder:text-white/40"
-            placeholder="Type or speak a phrase... (e.g., Hello, how are you?)"
+            placeholder='Type a phrase... (e.g., "Hello", "I need help", "Thank you")'
             value={transcript}
             onChange={(e) => setTranscript(e.target.value)}
           />
@@ -278,8 +360,8 @@ const translate = useCallback(async () => {
             {emergencyMode ? "Exit emergency signing" : "🚨 Emergency mode"}
           </Button>
           <div className="rounded-xl border border-cyan-300/20 bg-cyan-300/5 p-3 text-xs text-cyan-100">
-            <p className="mono uppercase tracking-wider text-cyan-300/85">Fallback visualization</p>
-            <p className="mt-1">✓ Direct Match &nbsp;|&nbsp; ◎ Semantic Match &nbsp;|&nbsp; → Fingerspell</p>
+            <p className="mono uppercase tracking-wider text-cyan-300/85">Try these phrases:</p>
+            <p className="mt-1 text-white/60">Hello • I need help • Thank you • Where is hospital • Yes/No</p>
           </div>
         </Card>
 
@@ -287,6 +369,7 @@ const translate = useCallback(async () => {
         <Card className={`space-y-3 p-5 shadow-2xl ${glow} ${emergencyMode ? "animate-pulse ring-2 ring-rose-500/70" : ""}`}>
           <h2 className="text-xl font-semibold text-cyan-100">3D Avatar Signing</h2>
           <AvatarStage
+            key={avatarUrl}  // ← IMPORTANT: Forces reload when avatar changes
             sentiment={displaySentiment}
             lowBandwidth={lowBandwidth}
             gloss={chunk.gloss}
@@ -328,18 +411,21 @@ const translate = useCallback(async () => {
           </div>
         </Card>
 
-        {/* Right Panel - Gloss + Analysis with Flag Sign */}
+        {/* Right Panel - Gloss + Analysis */}
         <Card className="space-y-3 p-5" role="region" aria-label="Gloss and analysis">
-          <h2 className="text-xl font-semibold text-cyan-100">Gloss + AI Analysis</h2>
+          <h2 className="text-xl font-semibold text-cyan-100">Gloss Output</h2>
           <p className="rounded-xl border border-cyan-300/20 bg-black/40 p-3 text-sm text-white/80">
             {chunk.transcript || "Awaiting input..."}
           </p>
           <div className="flex flex-wrap gap-2">
-            {chunk.gloss.map((token) => (
-              <span key={token} className="rounded-md bg-cyan-500/20 px-2 py-1 text-xs">
+            {chunk.gloss.map((token, idx) => (
+              <span key={`${token}-${idx}`} className="rounded-md bg-cyan-500/20 px-2 py-1 text-xs font-mono">
                 {token}
               </span>
             ))}
+            {chunk.gloss.length === 0 && !chunk.processing && (
+              <span className="text-xs text-white/40">Click Translate to see ISL gloss</span>
+            )}
           </div>
           <p className="text-sm text-white/70">Sentiment: {chunk.sentiment}</p>
           <div>
@@ -355,11 +441,7 @@ const translate = useCallback(async () => {
               />
             </div>
           </div>
-          <p className="text-sm text-amber-300">
-            Unknown words: {chunk.unknownWords.length ? chunk.unknownWords.join(", ") : "None"}
-          </p>
           
-          {/* Flag Sign Feature - RESTORED */}
           <textarea
             className="focus-ring h-20 w-full rounded-xl border border-cyan-300/20 bg-black/40 p-2 text-sm text-white placeholder:text-white/40"
             placeholder="Flag this sign (optional feedback)"

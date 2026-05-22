@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PipelineFlow } from "@/components/pipeline-flow";
 import { AvatarStage } from "@/components/avatar-stage";
+import { avatarStyles } from "@/components/avatar-selector";
 import type { Sentiment } from "@/lib/utils";
 
 const SCRIPT = ["HELLO HOW ARE YOU", "I NEED HELP", "CALL HOSPITAL", "THANK YOU", "ME GO SCHOOL"];
@@ -16,7 +17,23 @@ export default function DemoPage() {
   const [running, setRunning] = useState(false);
   const [slowMode, setSlowMode] = useState(false);
   const [sentiment, setSentiment] = useState<Sentiment>("neutral");
+  const [avatarUrl, setAvatarUrl] = useState<string>("");
+  
   const gloss = useMemo(() => SCRIPT[index].split(/\s+/).filter(Boolean), [index]);
+
+  // Load saved avatar on mount
+  useEffect(() => {
+    const savedAvatarUrl = localStorage.getItem("selectedAvatarUrl");
+    if (savedAvatarUrl) {
+      setAvatarUrl(savedAvatarUrl);
+    } else {
+      // Use default avatar
+      const defaultAvatar = avatarStyles.find(a => a.id === "default");
+      if (defaultAvatar) {
+        setAvatarUrl(defaultAvatar.vrmUrl);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const phrase = SCRIPT[index];
@@ -65,17 +82,19 @@ export default function DemoPage() {
               {SCRIPT[index]}
             </motion.p>
             <p className="mt-3 text-xs text-white/60">
-              Live AI simulation: transcript &rarr; gloss conversion &rarr; semantic mapping &rarr; sign output
+              Live AI simulation: transcript → gloss conversion → semantic mapping → sign output
             </p>
           </div>
           <div>
             <AvatarStage
+              key={avatarUrl}
               sentiment={sentiment}
-              lowBandwidth
+              lowBandwidth={false}
               gloss={gloss}
               signReplayKey={index}
               signingSpeed={slowMode ? 0.5 : 1}
               learningSlowMo={slowMode ? 0.5 : 1}
+              avatarUrl={avatarUrl}
             />
           </div>
         </div>

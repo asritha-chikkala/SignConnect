@@ -34,7 +34,6 @@ export type AvatarStageProps = {
   /** 0–1 hue shift for outfit/skin tint (demo). */
   appearanceHue?: number;
   highContrast?: boolean;
-  // Add to the AvatarStageProps interface
   avatarUrl?: string;
   onHudUpdate?: (state: AvatarHudState) => void;
   onCanvasReady?: (canvas: HTMLCanvasElement | null) => void;
@@ -83,15 +82,35 @@ async function fetchModelBuffer(modelUrl: string): Promise<ArrayBuffer> {
   return promise;
 }
 
-// Replace the vrmModelUrls function with this:
+// UPDATED: Look for VRM files in the correct locations (public/avatars/)
 function vrmModelUrls(customUrl?: string): string[] {
   const fromEnv = process.env.NEXT_PUBLIC_VRM_MODEL_URL?.trim();
-  const urls = [];
+  const urls: string[] = [];
   
-  if (customUrl) urls.push(customUrl);
-  if (fromEnv) urls.push(fromEnv);
-  urls.push("/avatar.vrm", "/models/avatar.vrm", "/api/vrm");
+  // Priority 1: Custom URL from avatar selector (user selected)
+  if (customUrl && customUrl.trim() !== "") {
+    urls.push(customUrl);
+  }
   
+  // Priority 2: From environment variable
+  if (fromEnv && fromEnv.trim() !== "") {
+    urls.push(fromEnv);
+  }
+  
+  // Priority 3: Default avatar in avatars folder (YOUR WORKING LOCATION)
+  urls.push("/avatars/default.vrm");
+  
+  // Priority 4: Other avatars in avatars folder
+  urls.push("/avatars/male-professional.vrm");
+  urls.push("/avatars/female-professional.vrm");
+  urls.push("/avatars/female-casual.vrm");
+  
+  // Priority 5: Fallback locations for backwards compatibility
+  urls.push("/avatar.vrm");
+  urls.push("/models/avatar.vrm");
+  urls.push("/api/vrm");
+  
+  // Remove duplicates
   return [...new Set(urls)];
 }
 
@@ -209,7 +228,6 @@ export function AvatarStage({
 
   const signingAbortRef = useRef<{ aborted: boolean }>({ aborted: false });
   const activeActionRef = useRef<THREE.AnimationAction | null>(null);
-  /** World-space Y rotation so the avatar faces the camera; idle sway adds on top (see animate loop). */
   const avatarBaseYawRef = useRef(Math.PI);
 
   const [loadPhase, setLoadPhase] = useState<"loading" | "ready" | "error">("loading");
@@ -344,8 +362,11 @@ export function AvatarStage({
 
       let lastError: unknown;
       const urls = vrmModelUrls(avatarUrl);
+      console.log("🔍 Trying VRM URLs:", urls);
+      
       for (const vrmUrl of urls) {
         try {
+          console.log("🔄 Attempting to load:", vrmUrl);
           const buffer = await fetchModelBuffer(vrmUrl);
           if (cancelled) return;
 
@@ -401,11 +422,7 @@ export function AvatarStage({
 
       if (!cancelled) {
         setLoadPhase("error");
-        const msg =
-          "Could not load any VRM. Tried: static /avatar.vrm, /models/7469932817343173615.vrm, and /api/vrm. " +
-          "Confirm public/avatar.vrm exists, or set NEXT_PUBLIC_VRM_MODEL_URL. " +
-          "If you previously saw a 404, clear site data (IndexedDB) for this origin or hard-refresh. " +
-          "Optional: NEXT_PUBLIC_GLTF_FALLBACK_URL for a Mixamo GLB with animations.";
+        const msg = "Could not load VRM model. Please ensure public/avatars/default.vrm exists.";
         setLoadMessage(msg);
         onLoadStatusRef.current?.("error", msg);
       }

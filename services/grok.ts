@@ -58,14 +58,14 @@ export async function generateGlossWithGrok(transcript: string): Promise<GrokGlo
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 12000);
-    const response = await fetch("https://api.x.ai/v1/chat/completions", {
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: process.env.GROK_MODEL || "grok-2",
+        model: "llama-3.3-70b-versatile",
         messages: [
           {
             role: "system",
