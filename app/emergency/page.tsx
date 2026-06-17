@@ -7,6 +7,7 @@ import { AvatarStage } from "@/components/avatar-stage";
 import { EMERGENCY_PHRASES } from "@/data/emergency-phrases";
 import { useIndexedEmergencyCache } from "@/hooks/use-indexed-emergency-cache";
 import { avatarStyles } from "@/components/avatar-selector";
+import { GestureShortcut } from "@/components/GestureShortcut";
 
 export default function EmergencyPage() {
   const { primeCache, getCached } = useIndexedEmergencyCache();
@@ -73,6 +74,12 @@ export default function EmergencyPage() {
 
   return (
     <AppShell>
+      <GestureShortcut 
+        currentGloss={selectedGloss}
+        onShortcutTriggered={(shortcut) => {
+          console.log("Emergency shortcut:", shortcut);
+        }}
+      />
       <div className="mb-6">
         <AvatarStage 
           key={avatarKey}

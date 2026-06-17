@@ -17,6 +17,7 @@ import { useTranslatorHotkeys } from "@/hooks/use-translator-hotkeys";
 import { useRecordCanvas } from "@/hooks/use-record-canvas";
 import type { TranslationChunk } from "@/types";
 import type { AvatarHudState } from "@/lib/gloss-sign-plan";
+import { GestureShortcut } from "@/components/GestureShortcut";
 
 const AvatarStage = dynamic(
   () => import("@/components/avatar-stage").then((mod) => mod.AvatarStage),
@@ -234,6 +235,14 @@ export default function TranslatorPage() {
 
   return (
     <AppShell>
+      {/* 🔴 ADD THIS 🔴 - Place it RIGHT AFTER AppShell opens */}
+      <GestureShortcut 
+        currentGloss={chunk.gloss}
+        onShortcutTriggered={(shortcut) => {
+          console.log("🎯 Shortcut triggered:", shortcut);
+          // You can add additional logic here like logging to analytics
+        }}
+      />
       {/* Avatar Selector Bar */}
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4 bg-black/30 rounded-xl p-4 border border-cyan-300/20">
         <div className="flex items-center gap-3">
