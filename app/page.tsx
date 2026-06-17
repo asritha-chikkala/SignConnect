@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { AppShell } from "@/components/app-shell";
 import { Card } from "@/components/ui/card";
-import { BookOpen } from "lucide-react";
+import { BookOpen, Captions } from "lucide-react";
 
 export default function Home() {
   const features = [
@@ -23,13 +23,12 @@ export default function Home() {
 
   return (
     <AppShell>
-      {/* Hero Section with Jumping Avatar */}
+      {/* Hero Section */}
       <section className="relative overflow-hidden rounded-3xl border border-cyan-300/20 bg-[#050713]/85 p-8 md:p-12 lg:p-16">
         <div className="scanlines absolute inset-0 opacity-80" />
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(0,229,255,0.24),transparent_38%),radial-gradient(circle_at_85%_18%,rgba(139,92,246,0.25),transparent_36%),linear-gradient(180deg,rgba(0,229,255,0.08),transparent_35%)]" />
         
         <div className="relative flex flex-col items-center text-center">
-          {/* Jumping Avatar */}
           <div className="animate-float mb-8">
             <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-br from-cyan-400 to-purple-500 flex items-center justify-center shadow-[0_0_60px_rgba(0,229,255,0.4)]">
               <span className="text-5xl md:text-6xl">🤟</span>
@@ -45,7 +44,7 @@ export default function Home() {
             semantic fallback mapping, and cinematic VRM signing.
           </p>
           
-          {/* Buttons - Only ONE section, includes Educational Mode */}
+          {/* Buttons */}
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Link href="/translator" prefetch={false}>
               <Button size="lg" className="bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600">
@@ -56,6 +55,13 @@ export default function Home() {
               <Button size="lg" variant="outline" className="border-cyan-500/50 hover:bg-cyan-500/10">
                 <BookOpen className="w-4 h-4 mr-2" />
                 Educational Mode
+              </Button>
+            </Link>
+            {/* 🔴 NEW: Video Captioning Button */}
+            <Link href="/caption" prefetch={false}>
+              <Button size="lg" variant="outline" className="border-purple-500/50 hover:bg-purple-500/10">
+                <Captions className="w-4 h-4 mr-2" />
+                Video Captioning
               </Button>
             </Link>
             <Link href="/demo" prefetch={false}>
@@ -103,11 +109,19 @@ export default function Home() {
           <p className="text-white/60 mb-6 max-w-2xl mx-auto">
             Start translating speech to Indian Sign Language in real-time with our AI-powered 3D avatar.
           </p>
-          <Link href="/translator">
-            <Button size="lg" className="bg-gradient-to-r from-cyan-500 to-purple-500">
-              Go to Translator →
-            </Button>
-          </Link>
+          <div className="flex flex-wrap justify-center gap-3">
+            <Link href="/translator">
+              <Button size="lg" className="bg-gradient-to-r from-cyan-500 to-purple-500">
+                Go to Translator →
+              </Button>
+            </Link>
+            <Link href="/caption">
+              <Button size="lg" variant="outline" className="border-purple-500/50 hover:bg-purple-500/10">
+                <Captions className="w-4 h-4 mr-2" />
+                Try Video Captioning
+              </Button>
+            </Link>
+          </div>
         </Card>
       </section>
 

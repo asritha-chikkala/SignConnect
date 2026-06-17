@@ -87,7 +87,7 @@ function vrmModelUrls(customUrl?: string): string[] {
   const fromEnv = process.env.NEXT_PUBLIC_VRM_MODEL_URL?.trim();
   const urls: string[] = [];
   
-  // Priority 1: Custom URL from avatar selector (user selected)
+  // Priority 1: Custom URL from avatar selector
   if (customUrl && customUrl.trim() !== "") {
     urls.push(customUrl);
   }
@@ -97,20 +97,19 @@ function vrmModelUrls(customUrl?: string): string[] {
     urls.push(fromEnv);
   }
   
-  // Priority 3: Default avatar in avatars folder (YOUR WORKING LOCATION)
+  // Priority 3: Default avatar in avatars folder
   urls.push("/avatars/default.vrm");
   
-  // Priority 4: Other avatars in avatars folder
+  // Priority 4: Other avatars
   urls.push("/avatars/male-professional.vrm");
   urls.push("/avatars/female-professional.vrm");
   urls.push("/avatars/female-casual.vrm");
   
-  // Priority 5: Fallback locations for backwards compatibility
-  urls.push("/avatar.vrm");
-  urls.push("/models/avatar.vrm");
-  urls.push("/api/vrm");
+  // Remove old locations to avoid warnings
+  // urls.push("/avatar.vrm");  // ← Comment out or remove
+  // urls.push("/models/avatar.vrm");  // ← Comment out or remove
+  // urls.push("/api/vrm");  // ← Comment out or remove
   
-  // Remove duplicates
   return [...new Set(urls)];
 }
 

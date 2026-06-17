@@ -122,7 +122,7 @@ export function FileUploadSummarizer() {
                 <div>
                   <div className="flex justify-between items-start mb-3">
                     <p className="text-sm text-cyan-300 font-medium">Summary</p>
-                    <Button variant="ghost" size="sm" onClick={handleCopy} className="h-8">
+                    <Button variant="ghost"  onClick={handleCopy} className="h-8">
                       {isCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                     </Button>
                   </div>

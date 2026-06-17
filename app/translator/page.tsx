@@ -18,6 +18,7 @@ import { useRecordCanvas } from "@/hooks/use-record-canvas";
 import type { TranslationChunk } from "@/types";
 import type { AvatarHudState } from "@/lib/gloss-sign-plan";
 import { GestureShortcut } from "@/components/GestureShortcut";
+import { VideoCaptioner } from "@/components/VideoCaptioner";
 
 const AvatarStage = dynamic(
   () => import("@/components/avatar-stage").then((mod) => mod.AvatarStage),
@@ -243,6 +244,8 @@ export default function TranslatorPage() {
           // You can add additional logic here like logging to analytics
         }}
       />
+
+      
       {/* Avatar Selector Bar */}
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4 bg-black/30 rounded-xl p-4 border border-cyan-300/20">
         <div className="flex items-center gap-3">

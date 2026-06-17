@@ -7,8 +7,10 @@ import { cn } from "@/lib/utils";
 import { NeuralBackground } from "@/components/neural-background";
 
 const nav = [
-  { href: "/", label: "Home" },           // ADD THIS - Home first
+  { href: "/", label: "Home" },
   { href: "/translator", label: "Translator" },
+  { href: "/learn", label: "Learn" },
+  { href: "/caption", label: "Caption" },  // ← NEW
   { href: "/dashboard", label: "Dashboard" },
   { href: "/practice", label: "Practice" },
   { href: "/emergency", label: "Emergency" },

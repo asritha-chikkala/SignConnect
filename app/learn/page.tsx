@@ -162,7 +162,7 @@ export default function LearnPage() {
               </h1>
               <p className="text-white/50 text-sm">Upload any PDF/textbook and ask questions — the avatar will sign the answers in ISL</p>
             </div>
-            <Button variant="outline" size="sm" onClick={clearChat} className="border-white/10">
+            <Button variant="outline"  onClick={clearChat} className="border-white/10">
               <Trash2 className="w-4 h-4" />
             </Button>
           </div>
