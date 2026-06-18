@@ -569,7 +569,7 @@ export function AvatarStage({
 
           const vrm = gltf.userData.vrm as VRM | undefined;
           if (!vrm) {
-            console.warn("[SignBridge] File parsed but has no VRM extension — trying next URL:", vrmUrl);
+            console.warn("[SignConnect] File parsed but has no VRM extension — trying next URL:", vrmUrl);
             lastError = new Error("No VRM userData on glTF");
             continue;
           }
@@ -579,15 +579,15 @@ export function AvatarStage({
           for (const [k, v] of lib) merged.set(k, v);
           for (const [k, v] of mergeGlbEmbeddedClips(gltf)) merged.set(k, v);
           attachModel(gltf.scene, vrm, merged);
-          console.info("[SignBridge] VRM ready", { source: vrmUrl, clips: merged.size });
+          console.info("[SignConnect] VRM ready", { source: vrmUrl, clips: merged.size });
           return;
         } catch (e) {
           lastError = e;
-          console.warn("[SignBridge] VRM candidate failed:", vrmUrl, e);
+          console.warn("[SignConnect] VRM candidate failed:", vrmUrl, e);
         }
       }
 
-      console.warn("[SignBridge] All VRM URLs failed, trying GLB fallback…", lastError);
+      console.warn("[SignConnect] All VRM URLs failed, trying GLB fallback…", lastError);
 
       if (glbUrl) {
         try {
@@ -602,10 +602,10 @@ export function AvatarStage({
           for (const [k, v] of mergeGlbEmbeddedClips(gltf)) merged.set(k, v);
           if (merged.size === 0) throw new Error("GLB has no embedded animation clips.");
           attachModel(gltf.scene, null, merged);
-          console.info("[SignBridge] GLB fallback ready", { clips: merged.size });
+          console.info("[SignConnect] GLB fallback ready", { clips: merged.size });
           return;
         } catch (e) {
-          console.error("[SignBridge] GLB fallback failed", e);
+          console.error("[SignConnect] GLB fallback failed", e);
         }
       }
 

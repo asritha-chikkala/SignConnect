@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { NeuralBackground } from "@/components/neural-background";
+import { BRAND_NAME_UPPER } from "@/lib/brand";
 
 export function AuthShell({
   title,
@@ -26,7 +27,7 @@ export function AuthShell({
         className="relative w-full max-w-md rounded-3xl border border-cyan-300/30 bg-black/45 p-6 backdrop-blur-xl"
       >
         <Link href="/" className="mono text-xs tracking-widest text-cyan-300/80">
-          SIGNBRIDGE
+          {BRAND_NAME_UPPER}
         </Link>
         <h1 className="mt-3 text-3xl text-cyan-100" style={{ fontFamily: "var(--font-syne)" }}>
           {title}

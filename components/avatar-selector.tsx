@@ -27,7 +27,7 @@ export const avatarStyles: AvatarStyle[] = [
     vrmUrl: "/avatars/default.vrm",
     previewEmoji: "🤟",
     previewColor: "from-cyan-400 to-blue-500",
-    description: "Default SignBridge avatar",
+    description: "Default SignConnect avatar",
     traits: ["Balanced", "Clear signing", "Friendly"]
   },
   {
@@ -184,7 +184,7 @@ export function AvatarSelector({ onSelectAvatar, currentAvatarId, onClose }: Ava
                     <h2 className="text-2xl font-semibold text-cyan-100" style={{ fontFamily: "var(--font-syne)" }}>
                       Choose Your Avatar
                     </h2>
-                    <p className="text-sm text-white/50 mt-1">Select a character to represent you in SignBridge</p>
+                    <p className="text-sm text-white/50 mt-1">Select a character to represent you in SignConnect</p>
                   </div>
                   <button
                     onClick={() => setIsOpen(false)}

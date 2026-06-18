@@ -412,7 +412,7 @@ export default function TranslatorPage() {
               {recorder.recording ? "Stop recording" : "Record signing"}
             </Button>
             {recorder.lastBlobUrl && (
-              <a className="h-8 rounded-lg border border-cyan-300/40 px-3 py-1.5 text-xs text-cyan-100" href={recorder.lastBlobUrl} download="signbridge-session.webm">
+              <a className="h-8 rounded-lg border border-cyan-300/40 px-3 py-1.5 text-xs text-cyan-100" href={recorder.lastBlobUrl} download="signconnect-session.webm">
                 Download
               </a>
             )}

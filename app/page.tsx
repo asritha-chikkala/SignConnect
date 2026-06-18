@@ -6,6 +6,7 @@ import { AppShell } from "@/components/app-shell";
 import { Card } from "@/components/ui/card";
 import { BookOpen, Captions, Mic } from "lucide-react"; // 🔴 ADD Mic
 import { Camera} from "lucide-react";
+import { BRAND_NAME, BRAND_TAGLINE } from "@/lib/brand";
 
 export default function Home() {
   const features = [
@@ -41,7 +42,7 @@ export default function Home() {
             <span className="gradient-text">AI Powered Real-Time<br/>ISL Translation</span>
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-white/72">
-            SignBridge transforms live speech into expressive Indian Sign Language using Grok gloss intelligence, 
+            {BRAND_NAME} transforms live speech into expressive Indian Sign Language using Grok gloss intelligence, 
             semantic fallback mapping, and cinematic VRM signing.
           </p>
           
@@ -139,7 +140,7 @@ export default function Home() {
       </section>
 
       <footer className="mt-10 pb-2 text-center text-xs text-white/45">
-        SignBridge Neural Accessibility Platform — Breaking the Silence Barrier
+        {BRAND_NAME} {BRAND_TAGLINE} — Breaking the Silence Barrier
       </footer>
     </AppShell>
   );

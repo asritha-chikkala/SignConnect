@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { BRAND_NAME } from "@/lib/brand";
 import { cn } from "@/lib/utils";
 import { NeuralBackground } from "@/components/neural-background";
 import { LowLightDetector } from "@/components/LowLightDetector";
@@ -40,7 +41,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <header className="sticky top-0 z-40 border-b border-cyan-300/15 bg-black/40 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
           <Link href="/" prefetch className="text-lg font-semibold tracking-wide text-cyan-300 neon-text">
-            <span style={{ fontFamily: "var(--font-syne)" }}>SignBridge</span>
+            <span style={{ fontFamily: "var(--font-syne)" }}>{BRAND_NAME}</span>
           </Link>
           <nav className="hidden gap-2 overflow-auto md:flex" aria-label="Primary navigation">
             {nav.map((item) => (
