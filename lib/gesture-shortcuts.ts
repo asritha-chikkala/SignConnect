@@ -42,7 +42,7 @@ export const GESTURE_SHORTCUTS: GestureShortcut[] = [
     requiresConfirmation: true,
   },
   {
-    id: "help-call",
+    id: "help-alert",
     sign: "HELP",
     action: "show_alert",
     target: "🆘 HELP! Contact your emergency contact or call 112.",
@@ -169,7 +169,6 @@ function fallbackCopy(text: string): void {
   }
 }
 
-// Helper: Share location
 function shareLocation(): void {
   if (typeof window === "undefined") return;
   
@@ -183,14 +182,12 @@ function shareLocation(): void {
       const { latitude, longitude } = position.coords;
       const mapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
       
-      // Use native share if available (TypeScript knows this exists)
       if (navigator.share) {
         navigator.share({
           title: "My Location",
           text: "I'm here! Need help.",
           url: mapsUrl,
         }).catch(() => {
-          // If share fails, copy to clipboard
           copyToClipboard(mapsUrl);
         });
       } else {
@@ -213,7 +210,6 @@ function copyToClipboard(text: string): void {
   }
 }
 
-// Helper: Toggle flashlight (mobile only)
 function toggleFlashlight(): void {
   if (typeof window === "undefined") return;
   
@@ -235,7 +231,6 @@ function toggleFlashlight(): void {
     }
     
     try {
-      // Check if torch is supported
       const capabilities = track.getCapabilities?.() as any;
       if (capabilities && capabilities.torch) {
         // @ts-expect-error - torch is not in standard TypeScript types

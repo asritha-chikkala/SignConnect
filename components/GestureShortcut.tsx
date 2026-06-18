@@ -242,17 +242,17 @@ export function GestureShortcut({
         )}
       </AnimatePresence>
 
-      {/* Small indicator - shows recent shortcuts */}
+      {/* Small indicator - shows recent shortcuts (FIXED DUPLICATE KEY) */}
       <div className={`fixed bottom-24 left-4 z-40 ${className}`}>
         <div className="flex flex-col gap-1">
           {recentTriggers.length > 0 && (
             <div className="bg-black/60 backdrop-blur-sm rounded-xl px-3 py-2 border border-white/10">
               <p className="text-[10px] text-white/40 uppercase tracking-wider mb-1">Recent Actions</p>
               <div className="flex gap-1">
-                {recentTriggers.slice(0, 3).map((id) => {
+                {recentTriggers.slice(0, 3).map((id, index) => {
                   const shortcut = GESTURE_SHORTCUTS.find(s => s.id === id);
                   return shortcut ? (
-                    <span key={id} className="text-xs" title={shortcut.label}>
+                    <span key={`${id}-${index}`} className="text-xs" title={shortcut.label}>
                       {shortcut.icon}
                     </span>
                   ) : null;

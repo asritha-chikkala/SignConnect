@@ -82,33 +82,22 @@ async function fetchModelBuffer(modelUrl: string): Promise<ArrayBuffer> {
   return promise;
 }
 
-// UPDATED: Look for VRM files in the correct locations (public/avatars/)
 function vrmModelUrls(customUrl?: string): string[] {
   const fromEnv = process.env.NEXT_PUBLIC_VRM_MODEL_URL?.trim();
   const urls: string[] = [];
   
-  // Priority 1: Custom URL from avatar selector
   if (customUrl && customUrl.trim() !== "") {
     urls.push(customUrl);
   }
   
-  // Priority 2: From environment variable
   if (fromEnv && fromEnv.trim() !== "") {
     urls.push(fromEnv);
   }
   
-  // Priority 3: Default avatar in avatars folder
   urls.push("/avatars/default.vrm");
-  
-  // Priority 4: Other avatars
   urls.push("/avatars/male-professional.vrm");
   urls.push("/avatars/female-professional.vrm");
   urls.push("/avatars/female-casual.vrm");
-  
-  // Remove old locations to avoid warnings
-  // urls.push("/avatar.vrm");  // ← Comment out or remove
-  // urls.push("/models/avatar.vrm");  // ← Comment out or remove
-  // urls.push("/api/vrm");  // ← Comment out or remove
   
   return [...new Set(urls)];
 }
@@ -165,6 +154,162 @@ function applyHueToMeshes(root: THREE.Object3D, hue01: number) {
       }
     }
   });
+}
+
+// ===== DEFAULT ATTENTION POSITION =====
+function setDefaultAttentionPosition(root: THREE.Object3D) {
+  // Try multiple common bone naming conventions
+  const leftArm = root.getObjectByName('LeftArm') || 
+                  root.getObjectByName('leftArm') || 
+                  root.getObjectByName('Arm_L') || 
+                  root.getObjectByName('J_Bip_L_UpperArm') ||
+                  root.getObjectByName('J_Bip_LeftUpperArm') ||
+                  root.getObjectByName('upperarm_l') ||
+                  root.getObjectByName('L_UpperArm');
+  
+  const rightArm = root.getObjectByName('RightArm') || 
+                   root.getObjectByName('rightArm') || 
+                   root.getObjectByName('Arm_R') || 
+                   root.getObjectByName('J_Bip_R_UpperArm') ||
+                   root.getObjectByName('J_Bip_RightUpperArm') ||
+                   root.getObjectByName('upperarm_r') ||
+                   root.getObjectByName('R_UpperArm');
+  
+  const leftForearm = root.getObjectByName('LeftForearm') || 
+                      root.getObjectByName('leftForearm') || 
+                      root.getObjectByName('Forearm_L') || 
+                      root.getObjectByName('J_Bip_L_LowerArm') ||
+                      root.getObjectByName('J_Bip_LeftLowerArm') ||
+                      root.getObjectByName('lowerarm_l') ||
+                      root.getObjectByName('L_LowerArm');
+  
+  const rightForearm = root.getObjectByName('RightForearm') || 
+                       root.getObjectByName('rightForearm') || 
+                       root.getObjectByName('Forearm_R') || 
+                       root.getObjectByName('J_Bip_R_LowerArm') ||
+                       root.getObjectByName('J_Bip_RightLowerArm') ||
+                       root.getObjectByName('lowerarm_r') ||
+                       root.getObjectByName('R_LowerArm');
+  
+  const head = root.getObjectByName('Head') || 
+               root.getObjectByName('head') || 
+               root.getObjectByName('J_Bip_C_Head') ||
+               root.getObjectByName('J_Bip_Head') ||
+               root.getObjectByName('head_jnt');
+  
+  const spine = root.getObjectByName('Spine') || 
+                root.getObjectByName('spine') || 
+                root.getObjectByName('J_Bip_C_Spine') ||
+                root.getObjectByName('J_Bip_Spine') ||
+                root.getObjectByName('hips') ||
+                root.getObjectByName('Hips');
+  
+  // Log what was found for debugging
+  console.log('🔍 Bone search results:');
+  console.log('  Left Arm:', leftArm ? '✅ Found' : '❌ Not found');
+  console.log('  Right Arm:', rightArm ? '✅ Found' : '❌ Not found');
+  console.log('  Left Forearm:', leftForearm ? '✅ Found' : '❌ Not found');
+  console.log('  Right Forearm:', rightForearm ? '✅ Found' : '❌ Not found');
+  console.log('  Head:', head ? '✅ Found' : '❌ Not found');
+  console.log('  Spine:', spine ? '✅ Found' : '❌ Not found');
+  
+  // Set attention position - arms slightly forward, relaxed
+  if (leftArm) {
+    leftArm.rotation.z = 0.08;
+    leftArm.rotation.x = -0.05;
+    console.log('✅ Left arm position set');
+  }
+  if (rightArm) {
+    rightArm.rotation.z = -0.08;
+    rightArm.rotation.x = -0.05;
+    console.log('✅ Right arm position set');
+  }
+  if (leftForearm) {
+    leftForearm.rotation.x = 0.02;
+    console.log('✅ Left forearm position set');
+  }
+  if (rightForearm) {
+    rightForearm.rotation.x = 0.02;
+    console.log('✅ Right forearm position set');
+  }
+  if (head) {
+    head.rotation.x = 0.02;
+    console.log('✅ Head position set');
+  }
+  if (spine) {
+    spine.rotation.x = 0.01;
+    console.log('✅ Spine position set');
+  }
+}
+
+// ===== FACIAL EXPRESSIONS =====
+function setFacialExpression(vrm: VRM, sentiment: Sentiment, intensity: number = 0.7) {
+  if (!vrm.expressionManager) return;
+  
+  // Get available expression names from the VRM model
+  const availableExpressions: string[] = [];
+  try {
+    const exprManager = vrm.expressionManager as any;
+    if (exprManager._expressionMap) {
+      for (const key of Object.keys(exprManager._expressionMap)) {
+        availableExpressions.push(key);
+      }
+    }
+  } catch (e) {
+    // Fallback common expressions
+    availableExpressions.push('happy', 'joy', 'angry', 'aa', 'oh', 'surprised', 'fun', 'blink', 'sad');
+  }
+  
+  // Reset all expressions to 0 first
+  for (const name of availableExpressions) {
+    try {
+      vrm.expressionManager.setValue(name, 0);
+    } catch (e) {
+      // Ignore
+    }
+  }
+  
+  // Map sentiment to expression values
+  let expressionValues: { name: string; value: number }[] = [];
+  
+  switch (sentiment) {
+    case 'happy':
+      expressionValues = [
+        { name: 'happy', value: intensity },
+        { name: 'joy', value: intensity * 0.5 },
+        { name: 'fun', value: intensity * 0.3 },
+      ];
+      break;
+    case 'urgent':
+      expressionValues = [
+        { name: 'angry', value: intensity * 0.8 },
+        { name: 'aa', value: intensity * 0.4 },
+        { name: 'surprised', value: intensity * 0.3 },
+      ];
+      break;
+    case 'question':
+      expressionValues = [
+        { name: 'oh', value: intensity * 0.6 },
+        { name: 'aa', value: intensity * 0.3 },
+        { name: 'surprised', value: intensity * 0.3 },
+      ];
+      break;
+    case 'neutral':
+    default:
+      expressionValues = [];
+      break;
+  }
+  
+  // Apply expressions (only if they exist in the model)
+  for (const expr of expressionValues) {
+    try {
+      if (availableExpressions.includes(expr.name)) {
+        vrm.expressionManager.setValue(expr.name, expr.value);
+      }
+    } catch (e) {
+      // Expression not supported, ignore
+    }
+  }
 }
 
 function findClipByName(clips: Map<string, THREE.AnimationClip>, token: string): THREE.AnimationClip | undefined {
@@ -288,13 +433,49 @@ export function AvatarStage({
 
     const width = outer.clientWidth;
     const camera = new THREE.PerspectiveCamera(45, width / 360, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({
-      antialias: !lowBandwidth,
-      alpha: false,
-      powerPreference: "high-performance",
-    });
+    
+    // ===== WEBGL RENDERER WITH CONTEXT HANDLING =====
+    let renderer: THREE.WebGLRenderer;
+    try {
+      renderer = new THREE.WebGLRenderer({
+        antialias: !lowBandwidth,
+        alpha: false,
+        powerPreference: "high-performance",
+        failIfMajorPerformanceCaveat: false,
+        depth: true,
+        stencil: false,
+        premultipliedAlpha: true,
+        preserveDrawingBuffer: false,
+      });
+      
+      // Handle context loss
+      renderer.domElement.addEventListener('webglcontextlost', (event) => {
+        event.preventDefault();
+        console.warn('⚠️ WebGL context lost. Attempting to recover...');
+        setTimeout(() => {
+          try {
+            renderer.forceContextRestore();
+            console.log('✅ WebGL context restore attempted');
+          } catch (e) {
+            console.error('Failed to restore WebGL context:', e);
+          }
+        }, 100);
+      }, false);
+      
+      renderer.domElement.addEventListener('webglcontextrestored', () => {
+        console.log('✅ WebGL context restored successfully!');
+      }, false);
+      
+    } catch (error) {
+      console.error('❌ WebGL creation error:', error);
+      setLoadPhase("error");
+      setLoadMessage("WebGL not supported. Please use a different browser.");
+      onLoadStatusRef.current?.("error", "WebGL not supported");
+      return;
+    }
+    
     renderer.setSize(width, 360);
-    renderer.setPixelRatio(lowBandwidth ? 1 : Math.min(window.devicePixelRatio, 1.5));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     mount.replaceChildren(renderer.domElement);
     onCanvasReadyRef.current?.(renderer.domElement);
 
@@ -351,6 +532,15 @@ export function AvatarStage({
       clipsRef.current = clips;
       tintVrmMaterials(root, sentimentRef.current, SENTIMENT_THEME[sentimentRef.current].intensity);
       applyHueToMeshes(root, appearanceHueRef.current);
+      
+      // Set default attention position
+      setDefaultAttentionPosition(root);
+      
+      // Set initial facial expression
+      if (vrmRef.current) {
+        setFacialExpression(vrmRef.current, sentimentRef.current, 0.5);
+      }
+      
       setLoadPhase("ready");
       setLoadMessage("");
       onLoadStatusRef.current?.("ready");
@@ -439,6 +629,13 @@ export function AvatarStage({
       mixerRef.current?.update(delta);
       vrmRef.current?.update(delta);
 
+      // Update facial expressions during animation
+      if (vrmRef.current) {
+        const currentSentiment = sentimentRef.current;
+        const targetIntensity = 0.5 + Math.sin(time * 0.5) * 0.2;
+        setFacialExpression(vrmRef.current, currentSentiment, targetIntensity);
+      }
+
       const root = modelRootRef.current;
       if (root) {
         const base = 0.95;
@@ -487,7 +684,14 @@ export function AvatarStage({
       activeActionRef.current?.stop();
       mixerRef.current?.stopAllAction();
       mixerRef.current = null;
+      
+      // Proper WebGL disposal
+      if (rendererRef.current) {
+        rendererRef.current.dispose();
+        rendererRef.current.forceContextLoss?.();
+      }
       renderer.dispose();
+      
       mount.replaceChildren();
       modelRootRef.current = null;
       vrmRef.current = null;
@@ -504,6 +708,11 @@ export function AvatarStage({
     if (modelRootRef.current) {
       tintVrmMaterials(modelRootRef.current, sentiment, SENTIMENT_THEME[sentiment].intensity);
       applyHueToMeshes(modelRootRef.current, appearanceHue);
+      
+      // Update facial expression when sentiment changes
+      if (vrmRef.current) {
+        setFacialExpression(vrmRef.current, sentiment, 0.7);
+      }
     }
     const lights = lightsRef.current;
     if (lights) {
