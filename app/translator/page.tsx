@@ -19,6 +19,7 @@ import type { TranslationChunk } from "@/types";
 import type { AvatarHudState } from "@/lib/gloss-sign-plan";
 import { GestureShortcut } from "@/components/GestureShortcut";
 import { VideoCaptioner } from "@/components/VideoCaptioner";
+import { LowLightDetector } from "@/components/LowLightDetector";
 
 const AvatarStage = dynamic(
   () => import("@/components/avatar-stage").then((mod) => mod.AvatarStage),
@@ -244,6 +245,13 @@ export default function TranslatorPage() {
           // You can add additional logic here like logging to analytics
         }}
       />
+      <LowLightDetector 
+    onLowLightDetected={(isLow, brightness) => {
+      console.log(`Low light: ${isLow}, Brightness: ${brightness}%`);
+    }}
+    autoBoost={true}
+    threshold={30}
+  />
 
       
       {/* Avatar Selector Bar */}

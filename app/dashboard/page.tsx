@@ -5,6 +5,8 @@ import { AppShell } from "@/components/app-shell";
 import { Card } from "@/components/ui/card";
 import { createSupabaseBrowser } from "@/lib/supabase-client";
 import { LoadingSkeleton } from "@/components/loading-skeleton";
+import { LowLightDetector } from "@/components/LowLightDetector";
+
 
 export default function DashboardPage() {
   const [fullName, setFullName] = useState("");
@@ -48,6 +50,14 @@ export default function DashboardPage() {
           {email}
         </p>
       </div>
+      {/* 🔴 Add LowLightDetector here */}
+      <LowLightDetector 
+        onLowLightDetected={(isLow, brightness) => {
+          console.log(`Home: Low light: ${isLow}, Brightness: ${brightness}%`);
+        }}
+        autoBoost={true}
+        threshold={30}
+      />
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {[

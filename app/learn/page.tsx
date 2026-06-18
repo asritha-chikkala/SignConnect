@@ -6,6 +6,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AvatarStage } from "@/components/avatar-stage";
 import { Upload, FileText, Send, Sparkles, Trash2, Copy, Check, Bot, Loader2, X } from "lucide-react";
+import { LowLightDetector } from "@/components/LowLightDetector";
+
 
 interface Message {
   id: string;
@@ -320,7 +322,14 @@ export default function LearnPage() {
                 </div>
               </div>
             )}
-
+{/* 🔴 Add LowLightDetector here */}
+      <LowLightDetector 
+        onLowLightDetected={(isLow, brightness) => {
+          console.log(`Home: Low light: ${isLow}, Brightness: ${brightness}%`);
+        }}
+        autoBoost={true}
+        threshold={30}
+      />
             {/* Tips */}
             <div className="mt-auto pt-4">
               <div className="p-3 rounded-xl bg-white/5">

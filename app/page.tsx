@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { AppShell } from "@/components/app-shell";
 import { Card } from "@/components/ui/card";
 import { BookOpen, Captions } from "lucide-react";
+import { LowLightDetector } from "@/components/LowLightDetector";
 
 export default function Home() {
   const features = [
@@ -69,6 +70,7 @@ export default function Home() {
             </Link>
           </div>
 
+
           {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-12 pt-8 border-t border-cyan-300/20">
             {stats.map((stat) => (
@@ -99,6 +101,14 @@ export default function Home() {
           ))}
         </div>
       </section>
+      {/* 🔴 Add LowLightDetector here */}
+      <LowLightDetector 
+        onLowLightDetected={(isLow, brightness) => {
+          console.log(`Home: Low light: ${isLow}, Brightness: ${brightness}%`);
+        }}
+        autoBoost={true}
+        threshold={30}
+      />
 
       {/* CTA Section */}
       <section className="mt-12 mb-8">

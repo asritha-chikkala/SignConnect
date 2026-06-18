@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { AppShell } from "@/components/app-shell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -32,7 +32,7 @@ import {
 
 export default function CaptionPage() {
   const [videoUrl, setVideoUrl] = useState("");
-  const [videoSrc, setVideoSrc] = useState(""); // 🔴 Separate state for video source
+  const [videoSrc, setVideoSrc] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -58,6 +58,17 @@ export default function CaptionPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
+
+  // ===== CLEANUP ON UNMOUNT =====
+  useEffect(() => {
+    return () => {
+      if (videoRef.current) {
+        videoRef.current.pause();
+        videoRef.current.src = "";
+        videoRef.current.load();
+      }
+    };
+  }, []);
 
   // ===== AUDIO EXTRACTION HELPERS =====
   const extractAudioFromVideo = async (file: File): Promise<string> => {
@@ -228,7 +239,7 @@ export default function CaptionPage() {
     
     const url = URL.createObjectURL(file);
     setVideoUrl(url);
-    setVideoSrc(url); // 🔴 Set video source for file upload
+    setVideoSrc(url);
     
     await processVideoWithGroq(file);
   };
@@ -275,7 +286,6 @@ export default function CaptionPage() {
     }
   };
 
-  // ===== URL HANDLER =====
   const handleUrlSubmit = async () => {
     if (!videoUrl) return;
     
@@ -285,15 +295,14 @@ export default function CaptionPage() {
       setIsYouTube(true);
       setIsYouTubeUrl(true);
       setYoutubeVideoId(videoId);
-      setVideoSrc(""); // 🔴 Clear video source for YouTube (iframe will handle it)
+      setVideoSrc("");
       await fetchYouTubeTranscript(videoId);
       return;
     }
     
-    // For direct video URLs
     setIsYouTubeUrl(false);
     setYoutubeVideoId("");
-    setVideoSrc(videoUrl); // 🔴 Set video source only after clicking the button
+    setVideoSrc(videoUrl);
     
     setStatus("loading");
     setStatusMessage("Loading video from URL...");
@@ -305,10 +314,12 @@ export default function CaptionPage() {
         videoElement.src = videoUrl;
         videoElement.load();
         
-        await new Promise((resolve) => {
-          videoElement.onloadedmetadata = resolve;
-          setTimeout(resolve, 5000);
-        });
+        await Promise.race([
+          new Promise((resolve) => {
+            videoElement.onloadedmetadata = resolve;
+          }),
+          new Promise((resolve) => setTimeout(resolve, 5000))
+        ]);
         
         setStatus("idle");
         setStatusMessage("✅ Video loaded! Please paste the transcript below.");
@@ -322,7 +333,6 @@ export default function CaptionPage() {
     }
   };
 
-  // 🔴 NEW: Handle Enter key on URL input
   const handleUrlKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -330,31 +340,67 @@ export default function CaptionPage() {
     }
   };
 
+  // ===== VIDEO CONTROLS WITH PROPER PROMISE HANDLING =====
   const togglePlay = useCallback(() => {
-    if (videoRef.current) {
-      if (isPlaying) {
-        videoRef.current.pause();
-      } else {
-        videoRef.current.play();
-      }
-      setIsPlaying(!isPlaying);
+    if (!videoRef.current) return;
+    
+    const video = videoRef.current;
+    
+    if (isPlaying) {
+      video.pause();
+      setIsPlaying(false);
+      return;
+    }
+    
+    // Check if video is loaded
+    if (video.readyState === 0) {
+      setStatus("loading");
+      setStatusMessage("Loading video...");
+      video.load();
+    }
+    
+    const playPromise = video.play();
+    
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => {
+          setIsPlaying(true);
+          setStatus("idle");
+          setStatusMessage("");
+        })
+        .catch((error) => {
+          // Auto-play was prevented or interrupted
+          if (error.name === 'AbortError' || error.name === 'NotAllowedError') {
+            console.log('Play was interrupted or prevented:', error.name);
+            setStatus("idle");
+            setStatusMessage("Click play to start video");
+          } else {
+            console.error('Play error:', error);
+            setStatus("error");
+            setErrorMessage("Could not play video");
+            setStatusMessage("❌ Play failed");
+          }
+          setIsPlaying(false);
+        });
     }
   }, [isPlaying]);
 
   const handleTimeUpdate = useCallback(() => {
-    if (videoRef.current) {
-      const currentTime = videoRef.current.currentTime;
-      const duration = videoRef.current.duration || 1;
-      setProgress((currentTime / duration) * 100);
-      
-      const index = captionSegments.findIndex(
-        seg => currentTime >= seg.start && currentTime < seg.end
-      );
-      if (index !== -1 && index !== currentSegmentIndex) {
-        setCurrentSegmentIndex(index);
-        setGloss(captionSegments[index].gloss || []);
-        setSignReplayKey(prev => prev + 1);
-      }
+    if (!videoRef.current) return;
+    
+    const video = videoRef.current;
+    const currentTime = video.currentTime;
+    const duration = video.duration || 1;
+    
+    setProgress((currentTime / duration) * 100);
+    
+    const index = captionSegments.findIndex(
+      seg => currentTime >= seg.start && currentTime < seg.end
+    );
+    if (index !== -1 && index !== currentSegmentIndex) {
+      setCurrentSegmentIndex(index);
+      setGloss(captionSegments[index]?.gloss || []);
+      setSignReplayKey(prev => prev + 1);
     }
   }, [captionSegments, currentSegmentIndex]);
 
@@ -365,12 +411,37 @@ export default function CaptionPage() {
   }, []);
 
   const handleReplay = () => {
-    if (videoRef.current) {
-      videoRef.current.currentTime = 0;
-      videoRef.current.play();
-      setIsPlaying(true);
+    if (!videoRef.current) return;
+    
+    const video = videoRef.current;
+    
+    try {
+      video.currentTime = 0;
+      
+      if (video.readyState === 0) {
+        video.load();
+      }
+      
+      const playPromise = video.play();
+      
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            setIsPlaying(true);
+          })
+          .catch((error) => {
+            if (error.name !== 'AbortError') {
+              console.error('Replay error:', error);
+            }
+            setIsPlaying(false);
+          });
+      }
+      
+      setSignReplayKey(prev => prev + 1);
+    } catch (error) {
+      console.error('Replay error:', error);
+      setIsPlaying(false);
     }
-    setSignReplayKey(prev => prev + 1);
   };
 
   const getAvatarSizeClass = () => {
@@ -393,7 +464,6 @@ export default function CaptionPage() {
   return (
     <AppShell>
       <div className="max-w-4xl mx-auto">
-        {/* Back Button */}
         <Link href="/" className="inline-flex items-center gap-2 text-white/60 hover:text-white mb-6 transition">
           <ArrowLeft className="w-4 h-4" />
           Back to Home
@@ -453,7 +523,6 @@ export default function CaptionPage() {
               </div>
             </div>
             
-            {/* YouTube Status */}
             {isYouTube && youtubeTitle && (
               <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/30">
                 <Film className="w-4 h-4 text-red-400" />
@@ -463,7 +532,6 @@ export default function CaptionPage() {
               </div>
             )}
             
-            {/* Manual Transcript Input */}
             <div className="flex gap-2">
               <textarea
                 placeholder={isYouTube ? "Transcript fetched automatically! Edit if needed..." : "Or paste your video transcript here manually..."}
@@ -485,32 +553,35 @@ export default function CaptionPage() {
           
           {/* Video Player */}
           <div className="relative rounded-xl overflow-hidden bg-black/80 border border-white/10">
-            {/* Local Video - using videoSrc */}
             {videoSrc && !isYouTubeUrl && (
               <video
                 ref={videoRef}
                 className="w-full aspect-video"
                 src={videoSrc}
+                crossOrigin="anonymous"
+                preload="metadata"
+                playsInline
+                controls={false}
                 onTimeUpdate={handleTimeUpdate}
                 onLoadedMetadata={handleLoadedMetadata}
+                onPlay={() => setIsPlaying(true)}
+                onPause={() => setIsPlaying(false)}
                 onError={(e) => {
                   console.error("Video load error:", e);
                   setStatus("error");
                   setErrorMessage("Could not load video. Please check the file format or URL.");
+                  setStatusMessage("❌ Video load failed");
                 }}
-                playsInline
-                controls={false}
               >
                 Your browser does not support the video tag.
               </video>
             )}
 
-            {/* YouTube Embedded Player */}
             {isYouTubeUrl && youtubeVideoId && (
               <div className="w-full aspect-video">
                 <iframe
                   className="w-full h-full"
-                  src={`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=0&controls=1&rel=0`}
+                  src={`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=0&controls=1&rel=0&enablejsapi=1`}
                   title="YouTube video player"
                   frameBorder="0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -519,7 +590,6 @@ export default function CaptionPage() {
               </div>
             )}
 
-            {/* Empty State */}
             {!videoSrc && !isYouTubeUrl && (
               <div className="aspect-video flex flex-col items-center justify-center bg-black/40">
                 <Video className="w-16 h-16 text-white/20" />
@@ -528,7 +598,6 @@ export default function CaptionPage() {
               </div>
             )}
             
-            {/* YouTube Badge */}
             {isYouTube && status === "idle" && (
               <div className="absolute top-4 left-4 flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/80 text-white text-xs">
                 <Film className="w-3 h-3" />
@@ -536,7 +605,6 @@ export default function CaptionPage() {
               </div>
             )}
             
-            {/* Video Controls - Only for local videos */}
             {videoSrc && !isYouTubeUrl && (
               <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/90 to-transparent">
                 <div className="flex items-center gap-4">
@@ -568,7 +636,6 @@ export default function CaptionPage() {
               </div>
             )}
             
-            {/* Avatar Overlay */}
             {showAvatar && status === "ready" && (
               <div className={`absolute top-4 right-4 ${getAvatarSizeClass()} rounded-xl overflow-hidden border-2 border-cyan-500/50 shadow-2xl bg-black/60 transition-all duration-300`}>
                 <AvatarStage
@@ -583,7 +650,6 @@ export default function CaptionPage() {
               </div>
             )}
             
-            {/* Current Caption */}
             {currentSegment && isPlaying && status === "ready" && videoSrc && !isYouTubeUrl && (
               <div className="absolute bottom-20 left-1/2 -translate-x-1/2 max-w-[90%] w-full px-4">
                 <div className="bg-black/80 backdrop-blur-sm rounded-xl px-4 py-2 border border-white/10 mx-auto max-w-2xl">
@@ -601,7 +667,6 @@ export default function CaptionPage() {
               </div>
             )}
             
-            {/* YouTube Caption */}
             {isYouTubeUrl && status === "ready" && currentSegment && (
               <div className="absolute bottom-16 left-1/2 -translate-x-1/2 max-w-[90%] w-full px-4 z-10">
                 <div className="bg-black/80 backdrop-blur-sm rounded-xl px-4 py-2 border border-white/10 mx-auto max-w-2xl">
@@ -619,7 +684,6 @@ export default function CaptionPage() {
               </div>
             )}
             
-            {/* Processing Overlay */}
             {isProcessing && (
               <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center">
                 <Loader2 className="w-8 h-8 text-cyan-400 animate-spin mb-3" />
@@ -628,7 +692,6 @@ export default function CaptionPage() {
               </div>
             )}
             
-            {/* Loading Transcript Overlay */}
             {isLoadingTranscript && (
               <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center">
                 <Loader2 className="w-8 h-8 text-cyan-400 animate-spin mb-3" />
@@ -637,7 +700,6 @@ export default function CaptionPage() {
               </div>
             )}
             
-            {/* Status Message Overlay */}
             {status === "idle" && statusMessage && !isProcessing && !isLoadingTranscript && (
               <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center p-4">
                 <div className="bg-black/80 backdrop-blur-sm rounded-xl p-6 max-w-md text-center border border-white/10">
@@ -648,7 +710,6 @@ export default function CaptionPage() {
               </div>
             )}
             
-            {/* Error Overlay */}
             {status === "error" && (
               <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center p-4">
                 <AlertCircle className="w-8 h-8 text-red-400 mb-3" />
@@ -658,7 +719,6 @@ export default function CaptionPage() {
             )}
           </div>
           
-          {/* Controls */}
           {status === "ready" && (
             <div className="mt-4 flex flex-wrap gap-3 items-center">
               <Button
@@ -696,7 +756,6 @@ export default function CaptionPage() {
             </div>
           )}
           
-          {/* Transcript Display */}
           {transcript && status === "ready" && (
             <div className="mt-4 p-4 rounded-xl bg-black/40 border border-white/10">
               <div className="flex items-center justify-between mb-3">
@@ -728,7 +787,6 @@ export default function CaptionPage() {
             </div>
           )}
           
-          {/* Powered by badge */}
           <div className="mt-4 flex justify-between items-center text-xs text-white/30 border-t border-white/5 pt-4">
             <span className="flex items-center gap-1">
               <Sparkles className="w-3 h-3 text-cyan-400" />
