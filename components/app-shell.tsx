@@ -12,7 +12,7 @@ const nav = [
   { href: "/translator", label: "Translator" },
   { href: "/learn", label: "Learn" },
   { href: "/caption", label: "Caption" },
-  { href: "/sign-to-speech", label: "Sign to Speech" },
+  { href: "/sign-to-text", label: "Sign to Text" }, // ← ADD THIS
   { href: "/dashboard", label: "Dashboard" },
   { href: "/practice", label: "Practice" },
   { href: "/emergency", label: "Emergency" },

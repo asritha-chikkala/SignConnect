@@ -8,8 +8,6 @@ import { EMERGENCY_PHRASES } from "@/data/emergency-phrases";
 import { useIndexedEmergencyCache } from "@/hooks/use-indexed-emergency-cache";
 import { avatarStyles } from "@/components/avatar-selector";
 import { GestureShortcut } from "@/components/GestureShortcut";
-import { LowLightDetector } from "@/components/LowLightDetector";
-
 
 export default function EmergencyPage() {
   const { primeCache, getCached } = useIndexedEmergencyCache();
@@ -95,14 +93,7 @@ export default function EmergencyPage() {
           onLoadStatus={(phase, message) => console.log("Avatar:", phase, message)}
         />
       </div>
-{/* 🔴 Add LowLightDetector here */}
-      <LowLightDetector 
-        onLowLightDetected={(isLow, brightness) => {
-          console.log(`Home: Low light: ${isLow}, Brightness: ${brightness}%`);
-        }}
-        autoBoost={true}
-        threshold={30}
-      />
+
       <Card className="border-rose-400/40 bg-gradient-to-b from-rose-900/30 to-black/30">
         <h1 className="text-2xl font-semibold text-rose-200" style={{ fontFamily: "var(--font-syne)" }}>
           Emergency Accessibility Mode

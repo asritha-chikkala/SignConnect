@@ -6,8 +6,6 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AvatarStage } from "@/components/avatar-stage";
 import { avatarStyles } from "@/components/avatar-selector";
-import { LowLightDetector } from "@/components/LowLightDetector";
-
 
 const recap = [
   { label: "HELLO YOU", gloss: ["HELLO", "YOU"] },
@@ -95,14 +93,7 @@ export default function PracticePage() {
           onChange={(e) => setSpeed(Number(e.target.value))}
           className="mt-2 w-full"
         />
-        {/* 🔴 Add LowLightDetector here */}
-      <LowLightDetector 
-        onLowLightDetected={(isLow, brightness) => {
-          console.log(`Home: Low light: ${isLow}, Brightness: ${brightness}%`);
-        }}
-        autoBoost={true}
-        threshold={30}
-      />
+        
         <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-4">
           {recap.map((item) => (
             <Card key={item.label} className="p-3">

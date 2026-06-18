@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { AppShell } from "@/components/app-shell";
 import { Card } from "@/components/ui/card";
 import { BookOpen, Captions, Mic } from "lucide-react"; // 🔴 ADD Mic
+import { Camera} from "lucide-react";
 
 export default function Home() {
   const features = [
@@ -121,12 +122,12 @@ export default function Home() {
                 Go to Translator →
               </Button>
             </Link>
-            <Link href="/sign-to-speech">
-              <Button size="lg" variant="outline" className="border-pink-500/50 hover:bg-pink-500/10">
-                <Mic className="w-4 h-4 mr-2" />
-                Try Sign to Speech
-              </Button>
-            </Link>
+           <Link href="/sign-to-text" prefetch={false}>
+  <Button size="lg" variant="outline" className="border-pink-500/50 hover:bg-pink-500/10">
+    <Camera className="w-4 h-4 mr-2" />
+    Sign to Text
+  </Button>
+</Link>
             <Link href="/caption">
               <Button size="lg" variant="outline" className="border-purple-500/50 hover:bg-purple-500/10">
                 <Captions className="w-4 h-4 mr-2" />

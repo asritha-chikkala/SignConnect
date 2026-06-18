@@ -9,8 +9,6 @@ import { PipelineFlow } from "@/components/pipeline-flow";
 import { AvatarStage } from "@/components/avatar-stage";
 import { avatarStyles } from "@/components/avatar-selector";
 import type { Sentiment } from "@/lib/utils";
-import { LowLightDetector } from "@/components/LowLightDetector";
-
 
 const SCRIPT = ["HELLO HOW ARE YOU", "I NEED HELP", "CALL HOSPITAL", "THANK YOU", "ME GO SCHOOL"];
 
@@ -72,14 +70,7 @@ export default function DemoPage() {
             {slowMode ? "Disable Slow-motion" : "Slow-motion Mode"}
           </Button>
         </div>
-        {/* 🔴 Add LowLightDetector here */}
-      <LowLightDetector 
-        onLowLightDetected={(isLow, brightness) => {
-          console.log(`Home: Low light: ${isLow}, Brightness: ${brightness}%`);
-        }}
-        autoBoost={true}
-        threshold={30}
-      />
+        
         <div className="mt-6 grid gap-4 lg:grid-cols-[1.2fr_1fr]">
           <div className="rounded-xl border border-cyan-300/20 bg-black/40 p-6">
             <p className="text-sm text-white/60">Current phrase</p>
