@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sun, Moon, AlertTriangle, Lightbulb, Camera, CameraOff, X } from "lucide-react";
+import { Sun, Moon, AlertTriangle, Lightbulb, Camera, CameraOff, X, Eye } from "lucide-react";
 
 interface LowLightDetectorProps {
   onLowLightDetected?: (isLow: boolean, brightness: number) => void;
@@ -23,17 +23,22 @@ export function LowLightDetector({
   const [showBoost, setShowBoost] = useState(false);
   const [isBoosted, setIsBoosted] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
+  const [isPermissionDenied, setIsPermissionDenied] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [isCameraRequested, setIsCameraRequested] = useState(false);
   
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const animationRef = useRef<number | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
+  // Check if camera was previously enabled
   useEffect(() => {
-    startCamera();
-    return () => {
-      stopCamera();
-    };
+    const wasEnabled = sessionStorage.getItem('lowLightCameraEnabled');
+    if (wasEnabled === 'true') {
+      setIsCameraRequested(true);
+      startCamera();
+    }
   }, []);
 
   const startCamera = async () => {
@@ -46,24 +51,33 @@ export function LowLightDetector({
       
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        videoRef.current.play();
+        await videoRef.current.play();
         setIsCameraActive(true);
+        setIsPermissionDenied(false);
+        setIsInitialized(true);
+        setIsCameraRequested(true);
+        sessionStorage.setItem('lowLightCameraEnabled', 'true');
         analyzeBrightness();
       }
     } catch (error) {
       console.log("Camera not available for light detection");
+      setIsPermissionDenied(true);
       setIsCameraActive(false);
+      sessionStorage.removeItem('lowLightCameraEnabled');
     }
   };
 
   const stopCamera = () => {
     if (animationRef.current) {
       cancelAnimationFrame(animationRef.current);
+      animationRef.current = null;
     }
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
     }
     setIsCameraActive(false);
+    sessionStorage.removeItem('lowLightCameraEnabled');
   };
 
   const analyzeBrightness = () => {
@@ -107,7 +121,6 @@ export function LowLightDetector({
       if (isLow && autoBoost && !isDismissed) {
         setShowBoost(true);
         setIsBoosted(true);
-        // Apply boost effect
         document.documentElement.style.filter = "brightness(1.3) contrast(1.1)";
         setTimeout(() => {
           document.documentElement.style.filter = "";
@@ -150,46 +163,89 @@ export function LowLightDetector({
     }, 10000);
   };
 
+  const toggleCamera = () => {
+    if (isCameraActive) {
+      stopCamera();
+    } else {
+      startCamera();
+    }
+  };
+
   return (
     <div className={`fixed bottom-4 left-4 z-50 ${className}`}>
       {/* Hidden video for analysis */}
       <video ref={videoRef} className="hidden" playsInline muted />
       <canvas ref={canvasRef} className="hidden" />
 
-      {/* Camera Status */}
-      <div className="flex items-center gap-2 mb-2">
-        {isCameraActive ? (
-          <span className="flex items-center gap-1 text-xs text-green-400">
-            <Camera className="w-3 h-3" />
-            Active
-          </span>
-        ) : (
-          <span className="flex items-center gap-1 text-xs text-red-400">
-            <CameraOff className="w-3 h-3" />
-            Inactive
-          </span>
-        )}
+      {/* Main Controls */}
+      <div className="bg-black/60 backdrop-blur-sm rounded-xl p-3 border border-white/10 mb-2">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Eye className="w-4 h-4 text-cyan-400" />
+            <span className="text-xs text-white/60">Light Sensor</span>
+          </div>
+          <div className="flex items-center gap-2">
+            {isCameraActive ? (
+              <button
+                onClick={toggleCamera}
+                className="flex items-center gap-1 text-xs text-green-400 hover:text-green-300 transition"
+              >
+                <Camera className="w-3 h-3" />
+                On
+              </button>
+            ) : isPermissionDenied ? (
+              <span className="flex items-center gap-1 text-xs text-red-400">
+                <CameraOff className="w-3 h-3" />
+                Blocked
+              </span>
+            ) : (
+              <button
+                onClick={toggleCamera}
+                className="text-xs px-2 py-1 rounded-full bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 transition"
+              >
+                Enable Camera
+              </button>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Brightness Indicator */}
-      <div className="bg-black/60 backdrop-blur-sm rounded-xl px-3 py-2 border border-white/10 mb-2">
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-white/60">💡 Brightness</span>
-          <span className="text-xs text-white/80">{brightness}%</span>
+      {isCameraActive && (
+        <div className="bg-black/60 backdrop-blur-sm rounded-xl px-3 py-2 border border-white/10 mb-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-white/60">💡 Brightness</span>
+            <span className={`text-xs font-semibold ${brightness < threshold ? "text-amber-400" : "text-green-400"}`}>
+              {brightness}%
+            </span>
+          </div>
+          <div className="w-full h-1 bg-white/10 rounded-full mt-1">
+            <div 
+              className={`h-full rounded-full transition-all ${
+                brightness < threshold ? "bg-amber-400" : "bg-green-400"
+              }`}
+              style={{ width: `${Math.min(brightness, 100)}%` }}
+            />
+          </div>
         </div>
-        <div className="w-full h-1 bg-white/10 rounded-full mt-1">
-          <div 
-            className={`h-full rounded-full transition-all ${
-              brightness < threshold ? "bg-amber-400" : "bg-green-400"
-            }`}
-            style={{ width: `${Math.min(brightness, 100)}%` }}
-          />
+      )}
+
+      {/* Permission Denied Message */}
+      {isPermissionDenied && (
+        <div className="bg-black/60 backdrop-blur-sm rounded-xl p-3 border border-red-500/30 mb-2 max-w-xs">
+          <div className="flex items-start gap-2">
+            <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-xs text-white/80">Camera access blocked</p>
+              <p className="text-xs text-white/40 mt-0.5">Allow camera in browser settings</p>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Main Alert */}
       <AnimatePresence>
-        {isLowLight && !isDismissed && (
+        {isLowLight && isCameraActive && !isDismissed && (
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
@@ -209,7 +265,11 @@ export function LowLightDetector({
                   {autoBoost && (
                     <button
                       onClick={toggleBoost}
-                      className="text-xs px-3 py-1 rounded-full bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 transition"
+                      className={`text-xs px-3 py-1 rounded-full transition ${
+                        isBoosted 
+                          ? "bg-amber-500/30 text-amber-300" 
+                          : "bg-amber-500/20 text-amber-400 hover:bg-amber-500/30"
+                      }`}
                     >
                       {isBoosted ? "Disable Boost" : "Boost Brightness"}
                     </button>
@@ -243,12 +303,14 @@ export function LowLightDetector({
       </AnimatePresence>
 
       {/* Manual Boost Button */}
-      <button
-        onClick={manualBoost}
-        className="mt-2 text-xs px-3 py-1 rounded-full bg-white/10 text-white/50 hover:bg-white/20 transition w-full"
-      >
-        🔦 Boost (10s)
-      </button>
+      {isCameraActive && (
+        <button
+          onClick={manualBoost}
+          className="mt-2 text-xs px-3 py-1 rounded-full bg-white/10 text-white/50 hover:bg-white/20 transition w-full"
+        >
+          🔦 Boost (10s)
+        </button>
+      )}
     </div>
   );
 }

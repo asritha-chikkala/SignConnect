@@ -4,8 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { AppShell } from "@/components/app-shell";
 import { Card } from "@/components/ui/card";
-import { BookOpen, Captions } from "lucide-react";
-import { LowLightDetector } from "@/components/LowLightDetector";
+import { BookOpen, Captions, Mic } from "lucide-react"; // 🔴 ADD Mic
 
 export default function Home() {
   const features = [
@@ -45,7 +44,7 @@ export default function Home() {
             semantic fallback mapping, and cinematic VRM signing.
           </p>
           
-          {/* Buttons */}
+          {/* Buttons - ADD Sign-to-Speech */}
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Link href="/translator" prefetch={false}>
               <Button size="lg" className="bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600">
@@ -58,18 +57,23 @@ export default function Home() {
                 Educational Mode
               </Button>
             </Link>
-            {/* 🔴 NEW: Video Captioning Button */}
             <Link href="/caption" prefetch={false}>
               <Button size="lg" variant="outline" className="border-purple-500/50 hover:bg-purple-500/10">
                 <Captions className="w-4 h-4 mr-2" />
                 Video Captioning
               </Button>
             </Link>
+            {/* 🔴 NEW: Sign-to-Speech Button */}
+            <Link href="/sign-to-speech" prefetch={false}>
+              <Button size="lg" variant="outline" className="border-pink-500/50 hover:bg-pink-500/10">
+                <Mic className="w-4 h-4 mr-2" />
+                Sign to Speech
+              </Button>
+            </Link>
             <Link href="/demo" prefetch={false}>
               <Button variant="outline" size="lg">Watch Demo</Button>
             </Link>
           </div>
-
 
           {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-12 pt-8 border-t border-cyan-300/20">
@@ -101,14 +105,6 @@ export default function Home() {
           ))}
         </div>
       </section>
-      {/* 🔴 Add LowLightDetector here */}
-      <LowLightDetector 
-        onLowLightDetected={(isLow, brightness) => {
-          console.log(`Home: Low light: ${isLow}, Brightness: ${brightness}%`);
-        }}
-        autoBoost={true}
-        threshold={30}
-      />
 
       {/* CTA Section */}
       <section className="mt-12 mb-8">
@@ -123,6 +119,12 @@ export default function Home() {
             <Link href="/translator">
               <Button size="lg" className="bg-gradient-to-r from-cyan-500 to-purple-500">
                 Go to Translator →
+              </Button>
+            </Link>
+            <Link href="/sign-to-speech">
+              <Button size="lg" variant="outline" className="border-pink-500/50 hover:bg-pink-500/10">
+                <Mic className="w-4 h-4 mr-2" />
+                Try Sign to Speech
               </Button>
             </Link>
             <Link href="/caption">
