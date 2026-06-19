@@ -17,9 +17,11 @@ const syne = Syne({
   subsets: ["latin"],
 });
 
+import { BRAND_FULL_TITLE, BRAND_NAME } from "@/lib/brand";
+
 export const metadata: Metadata = {
-  title: "SignBridge | AI Accessibility Platform",
-  description: "Real-time Indian Sign Language communication platform.",
+  title: BRAND_FULL_TITLE,
+  description: `${BRAND_NAME} — real-time Indian Sign Language communication platform.`,
   manifest: "/manifest.json",
 };
 

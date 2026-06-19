@@ -1,4 +1,4 @@
-# SignBridge Architecture
+# SignConnect Architecture
 
 - `app/`: Next.js 14 App Router pages, API routes, and protected flows.
 - `components/`: UI primitives and feature components including VRM stage.

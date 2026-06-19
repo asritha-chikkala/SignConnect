@@ -54,7 +54,7 @@ export default function LoginPage() {
   };
 
   return (
-    <AuthShell title="Secure Login" subtitle="Enter your credentials to access the SignBridge neural dashboard.">
+    <AuthShell title="Secure Login" subtitle="Enter your credentials to access the SignConnect neural dashboard.">
       <input
         className="focus-ring w-full rounded-xl border border-cyan-300/25 bg-black/40 p-3 text-white placeholder:text-white/40"
         placeholder="Email address"

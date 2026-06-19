@@ -1,4 +1,4 @@
-# SignBridge
+# SignConnect
 
 Production-style AI accessibility platform for real-time Indian Sign Language communication.
 

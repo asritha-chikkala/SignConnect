@@ -66,7 +66,7 @@ export default function SignupPage() {
   };
 
   return (
-    <AuthShell title="Create Account" subtitle="Set up your SignBridge profile and verify your email to continue.">
+    <AuthShell title="Create Account" subtitle="Set up your SignConnect profile and verify your email to continue.">
       {pendingVerification ? (
         <div className="rounded-2xl border border-emerald-400/40 bg-emerald-500/10 p-4 text-sm text-emerald-200">
           <p className="font-medium">Verification pending</p>

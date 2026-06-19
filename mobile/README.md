@@ -1,4 +1,4 @@
-# SignBridge Mobile Companion (Expo Skeleton)
+# SignConnect Mobile Companion (Expo Skeleton)
 
 This folder is a starter structure for an Expo companion app focused on emergency communication and offline quick phrases.
 
