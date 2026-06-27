@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { createSupabaseBrowser } from "@/lib/supabase-client";
 import { Button } from "@/components/ui/button";
 import { AuthShell } from "@/components/auth-shell";
+import { Loader2, CheckCircle, AlertCircle } from "lucide-react";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -16,6 +17,7 @@ export default function SignupPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
   const [pendingVerification, setPendingVerification] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -23,14 +25,20 @@ export default function SignupPage() {
 
   const handleSignup = async () => {
     setMessage("");
+    setError("");
 
     if (!fullName || !email || !password || !confirmPassword) {
-      setMessage("Please fill all fields");
+      setError("Please fill all fields");
       return;
     }
 
     if (password !== confirmPassword) {
-      setMessage("Passwords do not match");
+      setError("Passwords do not match");
+      return;
+    }
+
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters");
       return;
     }
 
@@ -48,7 +56,7 @@ export default function SignupPage() {
 
     if (error) {
       setLoading(false);
-      setMessage(error.message);
+      setError(error.message);
       return;
     }
 
@@ -62,16 +70,21 @@ export default function SignupPage() {
 
     setLoading(false);
     setPendingVerification(true);
-    setMessage("Verification email sent. Please verify before login.");
+    setMessage("Verification email sent! Please check your inbox and verify before logging in.");
   };
 
   return (
     <AuthShell title="Create Account" subtitle="Set up your SignConnect profile and verify your email to continue.">
       {pendingVerification ? (
-        <div className="rounded-2xl border border-emerald-400/40 bg-emerald-500/10 p-4 text-sm text-emerald-200">
-          <p className="font-medium">Verification pending</p>
-          <p className="mt-1">A verification link was sent to {email}. Verify, then continue to login.</p>
-          <div className="mt-3 flex gap-2">
+        <div className="rounded-2xl border border-emerald-400/40 bg-emerald-500/10 p-4">
+          <div className="flex items-center gap-3">
+            <CheckCircle className="w-6 h-6 text-emerald-400" />
+            <p className="font-medium text-emerald-200">Verification Email Sent</p>
+          </div>
+          <p className="mt-2 text-sm text-emerald-100/80">
+            A verification link was sent to <strong>{email}</strong>. Please check your inbox and spam folder.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
             <Button variant="outline" onClick={() => setPendingVerification(false)}>
               Edit details
             </Button>
@@ -81,28 +94,31 @@ export default function SignupPage() {
       ) : (
         <>
           <input
-            className="focus-ring w-full rounded-xl border border-cyan-300/25 bg-black/40 p-3"
+            className="focus-ring w-full rounded-xl border border-cyan-300/25 bg-black/40 p-3 text-white placeholder:text-white/40"
             placeholder="Full name"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
+            disabled={loading}
             aria-label="Full name"
           />
 
           <input
-            className="focus-ring w-full rounded-xl border border-cyan-300/25 bg-black/40 p-3"
+            className="focus-ring w-full rounded-xl border border-cyan-300/25 bg-black/40 p-3 text-white placeholder:text-white/40"
             placeholder="Email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            disabled={loading}
             aria-label="Email"
           />
 
           <input
-            className="focus-ring w-full rounded-xl border border-cyan-300/25 bg-black/40 p-3"
-            placeholder="Password"
+            className="focus-ring w-full rounded-xl border border-cyan-300/25 bg-black/40 p-3 text-white placeholder:text-white/40"
+            placeholder="Password (min 8 characters)"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            disabled={loading}
             aria-label="Password"
           />
 
@@ -117,31 +133,56 @@ export default function SignupPage() {
                     : "text-rose-300"
               }
             >
-              {strength.toUpperCase()}
+              {strength.toUpperCase()} {password.length > 0 && `(${password.length} characters)`}
             </p>
           </div>
 
           <input
-            className="focus-ring w-full rounded-xl border border-cyan-300/25 bg-black/40 p-3"
+            className="focus-ring w-full rounded-xl border border-cyan-300/25 bg-black/40 p-3 text-white placeholder:text-white/40"
             placeholder="Confirm password"
             type="password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
+            disabled={loading}
             aria-label="Confirm password"
           />
 
-          <Button className="w-full" onClick={handleSignup} disabled={loading} size="lg">
-            {loading ? "Creating account..." : "Sign up"}
+          <Button 
+            className="w-full flex items-center justify-center gap-2" 
+            onClick={handleSignup} 
+            disabled={loading} 
+            size="lg"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Creating account...
+              </>
+            ) : (
+              "Sign up"
+            )}
           </Button>
 
-          {!!message && <p className="text-sm text-white/80">{message}</p>}
+          {message && (
+            <div className="rounded-xl border border-emerald-500/50 bg-emerald-950/30 p-3 text-sm text-emerald-300">
+              <p className="font-medium">✅ Success</p>
+              <p>{message}</p>
+            </div>
+          )}
+
+          {error && (
+            <div className="rounded-xl border border-rose-500/50 bg-rose-950/30 p-3 text-sm text-rose-300">
+              <p className="font-medium">⚠️ Error</p>
+              <p>{error}</p>
+            </div>
+          )}
         </>
       )}
 
       <div className="text-center text-sm text-white/65">
-        <span>Already verified? </span>
+        <span>Already have an account? </span>
         <Link href="/login" className="text-cyan-300 hover:underline">
-          Go to login
+          Sign in
         </Link>
       </div>
     </AuthShell>

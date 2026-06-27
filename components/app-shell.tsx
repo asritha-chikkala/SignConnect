@@ -1,3 +1,5 @@
+// components/app-shell.tsx
+
 "use client";
 
 import Link from "next/link";
@@ -7,13 +9,14 @@ import { BRAND_NAME } from "@/lib/brand";
 import { cn } from "@/lib/utils";
 import { NeuralBackground } from "@/components/neural-background";
 import { LowLightDetector } from "@/components/LowLightDetector";
+import { SignOfTheDay } from "@/components/SignOfTheDay";
 
 const nav = [
   { href: "/", label: "Home" },
   { href: "/translator", label: "Translator" },
   { href: "/learn", label: "Learn" },
   { href: "/caption", label: "Caption" },
-  { href: "/sign-to-text", label: "Sign to Text" }, // ← ADD THIS
+  { href: "/sign-to-text", label: "Sign to Text" },
   { href: "/dashboard", label: "Dashboard" },
   { href: "/practice", label: "Practice" },
   { href: "/emergency", label: "Emergency" },
@@ -28,7 +31,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="relative min-h-screen pb-20 md:pb-8">
       <NeuralBackground />
       
-      {/* 🔴 Low Light Detector - Global */}
+      {/* Sign of the Day - Bottom Right Corner */}
+      <SignOfTheDay 
+        position="bottom-right"
+        className="z-50"
+      />
+
+      {/* Low Light Detector - Bottom Left Corner */}
       <LowLightDetector 
         onLowLightDetected={(isLow, brightness) => {
           console.log(`💡 Low light: ${isLow}, Brightness: ${brightness}%`);
@@ -96,7 +105,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           >
             {item.label === "Home" ? "🏠" : 
              item.label === "Emergency" ? "⚠️" : 
-             item.label === "Sign to Speech" ? "🎤" :
+             item.label === "Sign to Text" ? "✋" :
              item.label === "Caption" ? "📹" :
              item.label === "Learn" ? "📚" :
              item.label.charAt(0)}

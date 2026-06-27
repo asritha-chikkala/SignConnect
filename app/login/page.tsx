@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { createSupabaseBrowser } from "@/lib/supabase-client";
 import { Button } from "@/components/ui/button";
 import { AuthShell } from "@/components/auth-shell";
+import { Loader2 } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -77,13 +78,25 @@ export default function LoginPage() {
         aria-label="Password"
       />
 
-      <Button className="w-full" onClick={handleLogin} disabled={loading} size="lg">
-        {loading ? "Authenticating..." : "Login"}
+      <Button 
+        className="w-full flex items-center justify-center gap-2" 
+        onClick={handleLogin} 
+        disabled={loading} 
+        size="lg"
+      >
+        {loading ? (
+          <>
+            <Loader2 className="w-5 h-5 animate-spin" />
+            Authenticating...
+          </>
+        ) : (
+          "Login"
+        )}
       </Button>
 
       <Button
         variant="outline"
-        className="w-full"
+        className="w-full flex items-center justify-center gap-2"
         onClick={async () => {
           const supabase = createSupabaseBrowser();
           await supabase.auth.signInWithOAuth({
@@ -95,10 +108,22 @@ export default function LoginPage() {
         }}
         disabled={loading}
       >
-        Continue with Google
+        {loading ? (
+          <>
+            <Loader2 className="w-4 h-4 animate-spin" />
+            Please wait...
+          </>
+        ) : (
+          "Continue with Google"
+        )}
       </Button>
 
-      {error && <p className="rounded-xl border border-rose-500/50 bg-rose-950/30 p-2 text-sm text-rose-300">{error}</p>}
+      {error && (
+        <div className="rounded-xl border border-rose-500/50 bg-rose-950/30 p-3 text-sm text-rose-300">
+          <p className="font-medium">⚠️ Error</p>
+          <p>{error}</p>
+        </div>
+      )}
 
       <div className="text-center text-sm text-white/65">
         <span>Do not have an account? </span>
