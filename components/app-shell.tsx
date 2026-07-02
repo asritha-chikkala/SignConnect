@@ -1,5 +1,3 @@
-// components/app-shell.tsx
-
 "use client";
 
 import Link from "next/link";
@@ -18,8 +16,8 @@ const nav = [
   { href: "/caption", label: "Caption" },
   { href: "/sign-to-text", label: "Sign to Text" },
   { href: "/dashboard", label: "Dashboard" },
-  { href: "/practice", label: "Practice" },
-  { href: "/emergency", label: "Emergency" },
+  // { href: "/practice", label: "Practice" },  // ← REMOVED
+  // { href: "/emergency", label: "Emergency" }, // ← REMOVED
   { href: "/demo", label: "Demo" },
 ];
 
@@ -31,13 +29,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="relative min-h-screen pb-20 md:pb-8">
       <NeuralBackground />
       
-      {/* Sign of the Day - Bottom Right Corner */}
       <SignOfTheDay 
         position="bottom-right"
         className="z-50"
       />
 
-      {/* Low Light Detector - Bottom Left Corner */}
       <LowLightDetector 
         onLowLightDetected={(isLow, brightness) => {
           console.log(`💡 Low light: ${isLow}, Brightness: ${brightness}%`);
@@ -104,7 +100,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             )}
           >
             {item.label === "Home" ? "🏠" : 
-             item.label === "Emergency" ? "⚠️" : 
              item.label === "Sign to Text" ? "✋" :
              item.label === "Caption" ? "📹" :
              item.label === "Learn" ? "📚" :

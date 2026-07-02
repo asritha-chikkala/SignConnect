@@ -1,12 +1,10 @@
-// components/SignOfTheDay.tsx
-
 "use client";
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AvatarStage } from "@/components/avatar-stage";
 import { getAllSigns } from "@/lib/isl-signs";
-import { X, Calendar, Sparkles, RefreshCw } from "lucide-react";
+import { X, Calendar, Sparkles, RefreshCw, ChevronUp } from "lucide-react";
 
 interface SignOfTheDayProps {
   className?: string;
@@ -15,7 +13,7 @@ interface SignOfTheDayProps {
 
 export function SignOfTheDay({ className = "", position = "bottom-right" }: SignOfTheDayProps) {
   const [sign, setSign] = useState<any>(null);
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false); // ← START CLOSED (false)
   const [date, setDate] = useState("");
   const [signReplayKey, setSignReplayKey] = useState(0);
 
@@ -25,6 +23,22 @@ export function SignOfTheDay({ className = "", position = "bottom-right" }: Sign
     "top-left": "top-4 left-4",
     "bottom-left": "bottom-4 left-4",
   };
+
+  // Load saved state from localStorage
+  useEffect(() => {
+    const savedState = localStorage.getItem("sign_of_the_day_state");
+    if (savedState) {
+      try {
+        const parsed = JSON.parse(savedState);
+        setIsOpen(parsed.isOpen || false);
+      } catch (e) {}
+    }
+  }, []);
+
+  // Save state when it changes
+  useEffect(() => {
+    localStorage.setItem("sign_of_the_day_state", JSON.stringify({ isOpen }));
+  }, [isOpen]);
 
   // Get today's date in IST
   const getTodayIST = () => {
@@ -39,19 +53,21 @@ export function SignOfTheDay({ className = "", position = "bottom-right" }: Sign
     const allSigns = getAllSigns();
     const today = getTodayIST();
     
-    const saved = localStorage.getItem('isl_sign_of_the_day');
+    const saved = localStorage.getItem("isl_sign_of_the_day");
     if (saved) {
-      const parsed = JSON.parse(saved);
-      if (parsed.date === today && parsed.sign) {
-        return parsed.sign;
-      }
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.date === today && parsed.sign) {
+          return parsed.sign;
+        }
+      } catch (e) {}
     }
     
     const dayOfYear = Math.floor((new Date().getTime() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
     const signIndex = dayOfYear % allSigns.length;
     const newSign = allSigns[signIndex];
     
-    localStorage.setItem('isl_sign_of_the_day', JSON.stringify({
+    localStorage.setItem("isl_sign_of_the_day", JSON.stringify({
       date: today,
       sign: newSign,
     }));
@@ -84,50 +100,74 @@ export function SignOfTheDay({ className = "", position = "bottom-right" }: Sign
     return () => clearInterval(interval);
   }, [date]);
 
+  const handleClose = () => {
+    setIsOpen(false);
+  };
+
+  const handleOpen = () => {
+    setIsOpen(true);
+  };
+
   if (!sign) return null;
 
   return (
     <div className={`fixed z-50 ${positionClasses[position]} ${className}`}>
+      {/* Minimized Button - Always visible */}
+      <motion.button
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        whileHover={{ scale: 1.05 }}
+        onClick={handleOpen}
+        className="bg-black/80 backdrop-blur-xl rounded-full py-2.5 px-4 border border-cyan-500/30 shadow-lg hover:border-cyan-500/50 transition-all duration-300 flex items-center gap-3"
+        title="Open Sign of the Day"
+      >
+        <span className="text-2xl">{sign.icon}</span>
+        <span className="text-sm text-white/60 font-medium">Sign of the Day</span>
+        <ChevronUp className="w-4 h-4 text-cyan-400" />
+      </motion.button>
+
+      {/* Expanded Widget - Only shows when isOpen is true */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
             initial={{ opacity: 0, scale: 0.8, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.8, y: 20 }}
-            className="relative"
+            className="relative mt-2"
           >
-            <div className="bg-black/80 backdrop-blur-xl rounded-2xl border border-cyan-500/30 shadow-2xl shadow-cyan-500/20 p-4 w-96">
+            <div className="bg-black/80 backdrop-blur-xl rounded-2xl border border-cyan-500/30 shadow-2xl shadow-cyan-500/20 p-5 w-[420px]">
               {/* Close Button */}
               <button
-                onClick={() => setIsOpen(false)}
-                className="absolute top-2 right-2 text-white/30 hover:text-white transition"
+                onClick={handleClose}
+                className="absolute top-3 right-3 text-white/30 hover:text-white hover:bg-white/10 rounded-lg p-1.5 transition"
+                title="Close Sign of the Day"
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5" />
               </button>
 
               {/* Header */}
-              <div className="flex items-center gap-2 mb-2">
-                <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" />
-                <span className="text-xs font-medium text-amber-300">🌟 Sign of the Day</span>
-                <span className="text-[10px] text-white/30 ml-auto">
+              <div className="flex items-center gap-2 mb-3">
+                <Sparkles className="w-5 h-5 text-amber-400 animate-pulse" />
+                <span className="text-sm font-medium text-amber-300">🌟 Sign of the Day</span>
+                <span className="text-xs text-white/30 ml-auto">
                   {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                 </span>
               </div>
 
               {/* Sign Content */}
-              <div className="flex items-center gap-4">
-                <div className="text-5xl w-16 h-16 flex items-center justify-center bg-gradient-to-br from-cyan-500/20 to-purple-500/20 rounded-xl border border-cyan-500/20">
+              <div className="flex items-center gap-5">
+                <div className="text-6xl w-20 h-20 flex items-center justify-center bg-gradient-to-br from-cyan-500/20 to-purple-500/20 rounded-xl border border-cyan-500/20">
                   {sign.icon}
                 </div>
                 <div className="flex-1">
-                  <p className="text-lg font-bold text-white">{sign.text}</p>
-                  <p className="text-xs text-white/40">{sign.gloss}</p>
-                  <p className="text-[10px] text-white/30 mt-1 line-clamp-2">{sign.description}</p>
+                  <p className="text-2xl font-bold text-white">{sign.text}</p>
+                  <p className="text-sm text-white/40">{sign.gloss}</p>
+                  <p className="text-xs text-white/30 mt-1 line-clamp-2">{sign.description}</p>
                 </div>
               </div>
 
-              {/* Avatar Preview - INCREASED HEIGHT */}
-              <div className="mt-3 h-40 rounded-xl overflow-hidden bg-black/40 border border-white/10">
+              {/* Avatar Preview */}
+              <div className="mt-4 h-40 rounded-xl overflow-hidden bg-black/40 border border-white/10">
                 <AvatarStage
                   sentiment="neutral"
                   lowBandwidth={false}
@@ -137,18 +177,18 @@ export function SignOfTheDay({ className = "", position = "bottom-right" }: Sign
               </div>
 
               {/* Footer */}
-              <div className="mt-2 flex items-center justify-between">
-                <span className="text-[10px] text-white/20 flex items-center gap-1">
-                  <Calendar className="w-3 h-3" />
+              <div className="mt-3 flex items-center justify-between">
+                <span className="text-xs text-white/20 flex items-center gap-1.5">
+                  <Calendar className="w-4 h-4" />
                   Changes at midnight IST
                 </span>
                 <button
                   onClick={() => {
                     setSignReplayKey(prev => prev + 1);
                   }}
-                  className="text-[10px] text-cyan-400/50 hover:text-cyan-400 transition flex items-center gap-1"
+                  className="text-xs text-cyan-400/50 hover:text-cyan-400 transition flex items-center gap-1.5"
                 >
-                  <RefreshCw className="w-3 h-3" />
+                  <RefreshCw className="w-4 h-4" />
                   Replay
                 </button>
               </div>
@@ -156,18 +196,6 @@ export function SignOfTheDay({ className = "", position = "bottom-right" }: Sign
           </motion.div>
         )}
       </AnimatePresence>
-
-      {!isOpen && (
-        <motion.button
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          whileHover={{ scale: 1.05 }}
-          onClick={() => setIsOpen(true)}
-          className="bg-black/80 backdrop-blur-xl rounded-full p-3 border border-cyan-500/30 shadow-lg"
-        >
-          <span className="text-2xl">{sign.icon}</span>
-        </motion.button>
-      )}
     </div>
   );
 }
