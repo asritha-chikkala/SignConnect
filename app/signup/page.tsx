@@ -5,8 +5,21 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowser } from "@/lib/supabase-client";
 import { Button } from "@/components/ui/button";
-import { AuthShell } from "@/components/auth-shell";
-import { Loader2, CheckCircle, AlertCircle } from "lucide-react";
+import { CuteAvatar } from "@/components/CuteAvatar";
+import {
+  Loader2,
+  Mail,
+  Lock,
+  User,
+  Eye,
+  EyeOff,
+  CheckCircle,
+  AlertCircle,
+  Sparkles,
+  Zap,
+  Shield,
+  MessageCircle,
+} from "lucide-react";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -15,6 +28,7 @@ export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -74,117 +88,234 @@ export default function SignupPage() {
   };
 
   return (
-    <AuthShell title="Create Account" subtitle="Set up your SignConnect profile and verify your email to continue.">
-      {pendingVerification ? (
-        <div className="rounded-2xl border border-emerald-400/40 bg-emerald-500/10 p-4">
-          <div className="flex items-center gap-3">
-            <CheckCircle className="w-6 h-6 text-emerald-400" />
-            <p className="font-medium text-emerald-200">Verification Email Sent</p>
+    <div className="min-h-screen flex bg-[#05060a]">
+      {/* Left Side - Signup Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-12">
+        <div className="w-full max-w-md">
+          {/* Logo */}
+          <div className="mb-8">
+            <Link href="/" className="text-2xl font-bold text-cyan-300 flex items-center gap-2">
+              <span className="text-3xl">🤟</span>
+              SignConnect
+            </Link>
+            <p className="text-white/40 text-sm mt-1">Create your account</p>
           </div>
-          <p className="mt-2 text-sm text-emerald-100/80">
-            A verification link was sent to <strong>{email}</strong>. Please check your inbox and spam folder.
-          </p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            <Button variant="outline" onClick={() => setPendingVerification(false)}>
-              Edit details
-            </Button>
-            <Button onClick={() => router.push("/login")}>Go to Login</Button>
-          </div>
+
+          {pendingVerification ? (
+            <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-6 text-center">
+              <div className="flex items-center justify-center mb-4">
+                <CheckCircle className="w-12 h-12 text-emerald-400" />
+              </div>
+              <h3 className="text-xl font-semibold text-white">Verification Email Sent</h3>
+              <p className="text-sm text-white/60 mt-2">
+                We've sent a verification link to <span className="text-emerald-300">{email}</span>
+              </p>
+              <p className="text-xs text-white/40 mt-1">Please check your inbox and spam folder</p>
+              <div className="flex gap-3 mt-6">
+                <Button variant="outline" onClick={() => setPendingVerification(false)} className="flex-1">
+                  Edit details
+                </Button>
+                <Button onClick={() => router.push("/login")} className="flex-1 bg-gradient-to-r from-cyan-500 to-purple-500">
+                  Go to Login
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-white/70 mb-1.5">Full Name</label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                  <input
+                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 transition"
+                    placeholder="John Doe"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    disabled={loading}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-white/70 mb-1.5">Email Address</label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                  <input
+                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 transition"
+                    placeholder="you@example.com"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={loading}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-white/70 mb-1.5">Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                  <input
+                    className="w-full pl-10 pr-12 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 transition"
+                    placeholder="Minimum 8 characters"
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    disabled={loading}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+                {password && (
+                  <div className="mt-2">
+                    <div className="flex items-center gap-2">
+                      <div
+                        className={`h-1 flex-1 rounded-full ${
+                          strength === "strong"
+                            ? "bg-emerald-500"
+                            : strength === "medium"
+                            ? "bg-amber-500"
+                            : "bg-red-500"
+                        }`}
+                      />
+                      <span
+                        className={`text-xs font-medium ${
+                          strength === "strong"
+                            ? "text-emerald-400"
+                            : strength === "medium"
+                            ? "text-amber-400"
+                            : "text-red-400"
+                        }`}
+                      >
+                        {strength.toUpperCase()}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-white/70 mb-1.5">Confirm Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                  <input
+                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 transition"
+                    placeholder="Confirm your password"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    disabled={loading}
+                  />
+                </div>
+              </div>
+
+              {message && (
+                <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3">
+                  <p className="text-sm text-emerald-400">{message}</p>
+                </div>
+              )}
+
+              {error && (
+                <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-red-400">{error}</p>
+                  </div>
+                </div>
+              )}
+
+              <Button
+                className="w-full flex items-center justify-center gap-2 py-6 bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600 text-white font-semibold rounded-xl transition shadow-lg shadow-cyan-500/20"
+                onClick={handleSignup}
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Creating account...
+                  </>
+                ) : (
+                  "Sign Up"
+                )}
+              </Button>
+
+              <p className="text-center text-sm text-white/40 mt-4">
+                Already have an account?{" "}
+                <Link href="/login" className="text-cyan-400 hover:text-cyan-300 transition">
+                  Login
+                </Link>
+              </p>
+            </div>
+          )}
         </div>
-      ) : (
-        <>
-          <input
-            className="focus-ring w-full rounded-xl border border-cyan-300/25 bg-black/40 p-3 text-white placeholder:text-white/40"
-            placeholder="Full name"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            disabled={loading}
-            aria-label="Full name"
-          />
+      </div>
 
-          <input
-            className="focus-ring w-full rounded-xl border border-cyan-300/25 bg-black/40 p-3 text-white placeholder:text-white/40"
-            placeholder="Email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            disabled={loading}
-            aria-label="Email"
-          />
+      {/* Right Side - Cute Avatar + About */}
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-cyan-500/5 to-purple-500/5 flex-col items-center justify-center p-12 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute top-20 left-20 w-72 h-72 bg-cyan-500/20 rounded-full blur-3xl" />
+          <div className="absolute bottom-20 right-20 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl" />
+        </div>
 
-          <input
-            className="focus-ring w-full rounded-xl border border-cyan-300/25 bg-black/40 p-3 text-white placeholder:text-white/40"
-            placeholder="Password (min 8 characters)"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            disabled={loading}
-            aria-label="Password"
-          />
+        <div className="relative z-10 max-w-lg w-full text-center">
+          <div className="w-72 h-72 mx-auto mb-8">
+            <CuteAvatar />
+          </div>
 
-          <div className="rounded-xl border border-white/10 bg-white/5 p-2 text-xs">
-            <p className="mono uppercase tracking-wider text-white/60">Password strength</p>
-            <p
-              className={
-                strength === "strong"
-                  ? "text-emerald-300"
-                  : strength === "medium"
-                    ? "text-amber-300"
-                    : "text-rose-300"
-              }
-            >
-              {strength.toUpperCase()} {password.length > 0 && `(${password.length} characters)`}
+          <h2 className="text-3xl font-bold text-white mb-4">
+            Join <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">SignConnect</span>
+          </h2>
+          <p className="text-white/60 text-lg mb-8">
+            Start learning and communicating in Indian Sign Language today
+          </p>
+
+          <div className="grid grid-cols-2 gap-4 text-left">
+            <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+              <div className="flex items-center gap-2 mb-2">
+                <Sparkles className="w-4 h-4 text-cyan-400" />
+                <span className="text-sm font-medium text-white">AI Translation</span>
+              </div>
+              <p className="text-xs text-white/40">Real-time speech to ISL gloss</p>
+            </div>
+            <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+              <div className="flex items-center gap-2 mb-2">
+                <Zap className="w-4 h-4 text-purple-400" />
+                <span className="text-sm font-medium text-white">3D Avatar</span>
+              </div>
+              <p className="text-xs text-white/40">Expressive signing avatar</p>
+            </div>
+            <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+              <div className="flex items-center gap-2 mb-2">
+                <Shield className="w-4 h-4 text-green-400" />
+                <span className="text-sm font-medium text-white">Privacy First</span>
+              </div>
+              <p className="text-xs text-white/40">Your data stays yours</p>
+            </div>
+            <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+              <div className="flex items-center gap-2 mb-2">
+                <MessageCircle className="w-4 h-4 text-amber-400" />
+                <span className="text-sm font-medium text-white">Learn ISL</span>
+              </div>
+              <p className="text-xs text-white/40">Interactive learning tools</p>
+            </div>
+          </div>
+
+          <div className="mt-8 p-4 rounded-xl bg-white/5 border border-white/10">
+            <p className="text-sm text-white/40 italic">
+              "Sign language connects hearts, breaks barriers, and builds bridges of understanding."
             </p>
           </div>
 
-          <input
-            className="focus-ring w-full rounded-xl border border-cyan-300/25 bg-black/40 p-3 text-white placeholder:text-white/40"
-            placeholder="Confirm password"
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            disabled={loading}
-            aria-label="Confirm password"
-          />
-
-          <Button 
-            className="w-full flex items-center justify-center gap-2" 
-            onClick={handleSignup} 
-            disabled={loading} 
-            size="lg"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                Creating account...
-              </>
-            ) : (
-              "Sign up"
-            )}
-          </Button>
-
-          {message && (
-            <div className="rounded-xl border border-emerald-500/50 bg-emerald-950/30 p-3 text-sm text-emerald-300">
-              <p className="font-medium">✅ Success</p>
-              <p>{message}</p>
-            </div>
-          )}
-
-          {error && (
-            <div className="rounded-xl border border-rose-500/50 bg-rose-950/30 p-3 text-sm text-rose-300">
-              <p className="font-medium">⚠️ Error</p>
-              <p>{error}</p>
-            </div>
-          )}
-        </>
-      )}
-
-      <div className="text-center text-sm text-white/65">
-        <span>Already have an account? </span>
-        <Link href="/login" className="text-cyan-300 hover:underline">
-          Sign in
-        </Link>
+          <p className="text-xs text-white/20 mt-6">
+            Built with ❤️ 
+          </p>
+        </div>
       </div>
-    </AuthShell>
+    </div>
   );
 }
