@@ -94,10 +94,11 @@ function vrmModelUrls(customUrl?: string): string[] {
     urls.push(fromEnv);
   }
   
-  urls.push("/avatars/default.vrm");
+  
   urls.push("/avatars/male-professional.vrm");
   urls.push("/avatars/female-professional.vrm");
   urls.push("/avatars/female-casual.vrm");
+  urls.push("/avatars/default.vrm");
   
   return [...new Set(urls)];
 }

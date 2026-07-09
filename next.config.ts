@@ -1,16 +1,27 @@
 import type { NextConfig } from "next";
-import withPWA from "next-pwa";
 
-const nextConfig: NextConfig = withPWA({
-  dest: "public",
-  disable: process.env.NODE_ENV === "development",
-  register: true,
-  skipWaiting: true,
-})({
+const nextConfig: NextConfig = {
   images: {
     remotePatterns: [],
   },
-  // ===== ADD THIS: WebGL/Three.js support for Render =====
+  // ✅ Serve VRM files
+  async headers() {
+    return [
+      {
+        source: "/avatars/:path*",
+        headers: [
+          {
+            key: "Content-Type",
+            value: "application/octet-stream",
+          },
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+    ];
+  },
   webpack: (config, { isServer }) => {
     if (!isServer) {
       config.resolve.fallback = {
@@ -23,7 +34,6 @@ const nextConfig: NextConfig = withPWA({
         path: false,
       };
     }
-    // Support .glb and .vrm files
     config.module.rules.push({
       test: /\.(glb|vrm)$/,
       type: "asset/resource",
@@ -31,6 +41,6 @@ const nextConfig: NextConfig = withPWA({
     return config;
   },
   staticPageGenerationTimeout: 120,
-});
+};
 
 export default nextConfig;
