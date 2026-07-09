@@ -14,6 +14,7 @@ export default function LearnPage() {
   const [activeTab, setActiveTab] = useState<"chat" | "flashcards" | "quiz" | "history">("chat");
   const [chatHistory, setChatHistory] = useState<any[]>([]);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [chatKey, setChatKey] = useState(0); // ✅ Force remount
 
   useEffect(() => {
     const saved = localStorage.getItem("isl_chat_history");
@@ -30,9 +31,12 @@ export default function LearnPage() {
     setRefreshKey((prev) => prev + 1);
   };
 
-  // ✅ ADD THIS
   const handleTabChange = (tab: typeof activeTab) => {
     setActiveTab(tab);
+    // ✅ If switching AWAY from chat, increment key to destroy it
+    if (tab !== "chat") {
+      setChatKey((prev) => prev + 1);
+    }
   };
 
   return (
@@ -101,7 +105,8 @@ export default function LearnPage() {
         </div>
 
         <Card className="p-6 border-white/10">
-          {activeTab === "chat" && <Chat key="chat" onChatUpdate={refreshHistory} />}
+          {/* ✅ Only render the active tab with a key that changes when leaving */}
+          {activeTab === "chat" && <Chat key={`chat-${chatKey}`} onChatUpdate={refreshHistory} />}
           {activeTab === "flashcards" && <Flashcards key="flashcards" />}
           {activeTab === "quiz" && <Quiz key="quiz" />}
           {activeTab === "history" && <ChatHistory key="history" history={chatHistory} />}
