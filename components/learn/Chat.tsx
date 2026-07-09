@@ -42,8 +42,12 @@ export function Chat({ onChatUpdate }: ChatProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isInitialMount = useRef(true);
+  
+  // ✅ ADD THIS: AbortController ref for cleanup
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const isMountedRef = useRef(true);
 
-  // Load saved chat history - only on initial mount
+  // Load saved chat history
   useEffect(() => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
@@ -61,7 +65,23 @@ export function Chat({ onChatUpdate }: ChatProps) {
     }
   }, []);
 
-  // Save chat history - only when messages change and not on initial mount
+  // ✅ ADD THIS: Cleanup on unmount
+  useEffect(() => {
+    isMountedRef.current = true;
+    
+    return () => {
+      isMountedRef.current = false;
+      // Cancel any ongoing fetch requests
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
+      setIsLoading(false);
+      console.log("🧹 Chat component cleaned up");
+    };
+  }, []);
+
+  // Save chat history
   useEffect(() => {
     if (!isInitialMount.current && messages.length > 1) {
       localStorage.setItem("isl_chat_history", JSON.stringify(messages));
@@ -75,8 +95,14 @@ export function Chat({ onChatUpdate }: ChatProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // ✅ UPDATED: Send message with AbortController
   const sendMessage = async (text: string = input) => {
-    if (!text.trim()) return;
+    if (!text.trim() || isLoading) return;
+
+    // Cancel previous request if any
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
 
     const userMsg: Message = {
       id: Date.now().toString(),
@@ -88,6 +114,10 @@ export function Chat({ onChatUpdate }: ChatProps) {
     setInput("");
     setIsLoading(true);
 
+    // ✅ Create new AbortController
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     try {
       const res = await fetch("/api/learn/chat", {
         method: "POST",
@@ -96,18 +126,27 @@ export function Chat({ onChatUpdate }: ChatProps) {
           message: text,
           context: "You are an ISL tutor. Provide educational, accurate, and helpful responses about Indian Sign Language, Deaf culture, and ISL grammar. Keep responses concise and informative.",
         }),
+        signal: controller.signal, // ✅ Add abort signal
       });
+
+      // ✅ Check if component is still mounted
+      if (!isMountedRef.current) return;
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "API error");
 
       const assistantContent = data.response;
 
+      // ✅ Second fetch with abort signal
+      const glossController = new AbortController();
       const glossRes = await fetch("/api/translate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ transcript: assistantContent.slice(0, 500) }),
+        signal: glossController.signal,
       });
+
+      if (!isMountedRef.current) return;
 
       let glossData = { gloss: [] };
       if (glossRes.ok) glossData = await glossRes.json();
@@ -120,19 +159,33 @@ export function Chat({ onChatUpdate }: ChatProps) {
         timestamp: new Date(),
       };
 
-      setMessages((prev) => [...prev, assistantMsg]);
-      setCurrentGloss(glossData.gloss || []);
-      setSignReplayKey((prev) => prev + 1);
-    } catch (error) {
-      const errorMsg: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: "Sorry, I encountered an error. Please try again.",
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, errorMsg]);
+      if (isMountedRef.current) {
+        setMessages((prev) => [...prev, assistantMsg]);
+        setCurrentGloss(glossData.gloss || []);
+        setSignReplayKey((prev) => prev + 1);
+      }
+
+    } catch (error: any) {
+      // ✅ Ignore abort errors (user navigated away)
+      if (error.name === 'AbortError') {
+        console.log('Request cancelled (user left page)');
+        return;
+      }
+      
+      if (isMountedRef.current) {
+        const errorMsg: Message = {
+          id: (Date.now() + 1).toString(),
+          role: "assistant",
+          content: "Sorry, I encountered an error. Please try again.",
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, errorMsg]);
+      }
     } finally {
-      setIsLoading(false);
+      if (isMountedRef.current) {
+        setIsLoading(false);
+      }
+      abortControllerRef.current = null;
     }
   };
 
@@ -166,6 +219,7 @@ export function Chat({ onChatUpdate }: ChatProps) {
     }
   };
 
+  // ... rest of your JSX remains the same
   return (
     <div className="space-y-4">
       {/* Suggested Questions */}
