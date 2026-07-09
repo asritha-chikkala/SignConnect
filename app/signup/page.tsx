@@ -38,42 +38,74 @@ export default function SignupPage() {
   const strength = password.length >= 12 ? "strong" : password.length >= 8 ? "medium" : "weak";
 
   const handleSignup = async () => {
-    setMessage("");
-    setError("");
+  setMessage("");
+  setError("");
 
-    if (!fullName || !email || !password || !confirmPassword) {
-      setError("Please fill all fields");
+  if (!fullName || !email || !password || !confirmPassword) {
+    setError("Please fill all fields");
+    return;
+  }
+
+  if (password !== confirmPassword) {
+    setError("Passwords do not match");
+    return;
+  }
+
+  if (password.length < 8) {
+    setError("Password must be at least 8 characters");
+    return;
+  }
+
+  setLoading(true);
+
+  const supabase = createSupabaseBrowser();
+
+  try {
+    // ✅ FIX 1: Check if user already exists
+    const { data: existingUser, error: checkError } = await supabase
+      .from('profiles')
+      .select('email')
+      .eq('email', email)
+      .maybeSingle();
+
+    if (existingUser) {
+      setError("❌ An account with this email already exists. Please login.");
+      setLoading(false);
       return;
     }
 
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
-
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters");
-      return;
-    }
-
-    setLoading(true);
-
-    const supabase = createSupabaseBrowser();
-
+    // ✅ FIX 2: Sign up user
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: `${typeof window !== "undefined" ? window.location.origin : ""}/auth/callback`,
+        data: {
+          full_name: fullName,
+        },
       },
     });
 
     if (error) {
+      // ✅ FIX 3: Handle duplicate email error from Supabase
+      if (error.message.includes("User already registered")) {
+        setError("❌ An account with this email already exists. Please login.");
+      } else {
+        setError(error.message);
+      }
       setLoading(false);
-      setError(error.message);
       return;
     }
 
+    // ✅ FIX 4: If user was created but already exists (edge case)
+    if (data.user && data.user.identities?.length === 0) {
+      setError("❌ An account with this email already exists. Please login.");
+      setLoading(false);
+      await supabase.auth.signOut();
+      return;
+    }
+
+    // ✅ FIX 5: Create profile
     if (data.user) {
       await supabase.from("profiles").upsert({
         id: data.user.id,
@@ -82,10 +114,18 @@ export default function SignupPage() {
       });
     }
 
+    // ✅ FIX 6: Sign out immediately to prevent auto-login
+    await supabase.auth.signOut();
+
     setLoading(false);
     setPendingVerification(true);
     setMessage("Verification email sent! Please check your inbox and verify before logging in.");
-  };
+
+  } catch (err: any) {
+    setLoading(false);
+    setError(err.message || "Something went wrong");
+  }
+};
 
   return (
     <div className="min-h-screen flex bg-[#05060a]">

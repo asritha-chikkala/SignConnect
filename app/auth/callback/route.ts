@@ -31,6 +31,6 @@ export async function GET(request: Request) {
     await supabase.auth.exchangeCodeForSession(code)
   }
 
-  // Redirect to login after verification
+  // ✅ Redirect to login after verification
   return NextResponse.redirect(new URL('/login', requestUrl.origin))
 }

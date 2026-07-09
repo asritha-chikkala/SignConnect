@@ -35,11 +35,11 @@ export default function LoginPage() {
     const hash = window.location.hash;
     if (hash.includes('access_token') || hash.includes('code')) {
       setSuccess("✅ Email verified! You can now login.");
-      // Clean up the URL
       window.history.replaceState({}, document.title, window.location.pathname);
     }
   }, []);
 
+  // ✅ Handle Login
   const handleLogin = async () => {
     setError("");
     setSuccess("");
@@ -58,9 +58,10 @@ export default function LoginPage() {
       });
 
       if (loginError) {
-        // ✅ Better error messages
         if (loginError.message.includes("Email not confirmed")) {
           setError("📧 Please verify your email before logging in. Check your inbox!");
+        } else if (loginError.message.includes("Invalid login credentials")) {
+          setError("❌ Invalid email or password. Please try again.");
         } else {
           setError(loginError.message);
         }
@@ -86,16 +87,16 @@ export default function LoginPage() {
       }
 
       setLoading(false);
-      router.push("/");
       
+      // ✅ Force redirect with small delay to ensure session is saved
+      await new Promise(resolve => setTimeout(resolve, 300));
+      router.push("/");
+      router.refresh();
+
     } catch (err: any) {
       setError(err.message || "Something went wrong");
       setLoading(false);
     }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") handleLogin();
   };
 
   // ✅ Resend verification email
@@ -122,6 +123,10 @@ export default function LoginPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") handleLogin();
   };
 
   return (
@@ -158,6 +163,7 @@ export default function LoginPage() {
                   <button
                     onClick={resendVerification}
                     className="text-sm text-cyan-400 hover:text-cyan-300 mt-2 underline"
+                    disabled={loading}
                   >
                     Resend verification email
                   </button>
