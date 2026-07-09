@@ -10,6 +10,27 @@ const nextConfig: NextConfig = withPWA({
   images: {
     remotePatterns: [],
   },
+  // ===== ADD THIS: WebGL/Three.js support for Render =====
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+        canvas: false,
+        encoding: false,
+        path: false,
+      };
+    }
+    // Support .glb and .vrm files
+    config.module.rules.push({
+      test: /\.(glb|vrm)$/,
+      type: "asset/resource",
+    });
+    return config;
+  },
+  staticPageGenerationTimeout: 120,
 });
 
 export default nextConfig;
