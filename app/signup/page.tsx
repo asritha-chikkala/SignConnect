@@ -155,9 +155,7 @@ export default function SignupPage() {
                 <Button variant="outline" onClick={() => setPendingVerification(false)} className="flex-1">
                   Edit details
                 </Button>
-                <Button onClick={() => router.push("/login")} className="flex-1 bg-gradient-to-r from-cyan-500 to-purple-500">
-                  Go to Login
-                </Button>
+                
               </div>
             </div>
           ) : (
