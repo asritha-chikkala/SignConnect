@@ -1,7 +1,8 @@
 "use client";
+export const dynamic = 'force-dynamic';
 
 import { useCallback, useMemo, useRef, useState, useEffect } from "react";
-import dynamic from "next/dynamic";
+import dynamicImport from "next/dynamic";
 import { motion } from "framer-motion";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
@@ -21,7 +22,8 @@ import { GestureShortcut } from "@/components/GestureShortcut";
 import { VideoCaptioner } from "@/components/VideoCaptioner";
 import { LowLightDetector } from "@/components/LowLightDetector";
 
-const AvatarStage = dynamic(
+
+const AvatarStage = dynamicImport(
   () => import("@/components/avatar-stage").then((mod) => mod.AvatarStage),
   { ssr: false, loading: () => <LoadingSkeleton className="h-[360px] w-full" /> },
 );
