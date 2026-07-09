@@ -31,7 +31,8 @@ export function Chat({ onChatUpdate }: ChatProps) {
     {
       id: "welcome",
       role: "assistant",
-      content: "Hello! I'm your ISL AI Tutor. Ask me anything about Indian Sign Language, grammar, culture, or how to sign specific words!",
+      content:
+        "Hello! I'm your ISL AI Tutor. Ask me anything about Indian Sign Language, grammar, culture, or how to sign specific words!",
       timestamp: new Date(),
     },
   ]);
@@ -42,12 +43,12 @@ export function Chat({ onChatUpdate }: ChatProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isInitialMount = useRef(true);
-  
-  // ✅ ADD THIS: AbortController ref for cleanup
+
+  // ✅ Refs for cleanup
   const abortControllerRef = useRef<AbortController | null>(null);
   const isMountedRef = useRef(true);
 
-  // Load saved chat history
+  // Load saved chat history - only on initial mount
   useEffect(() => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
@@ -65,10 +66,10 @@ export function Chat({ onChatUpdate }: ChatProps) {
     }
   }, []);
 
-  // ✅ ADD THIS: Cleanup on unmount
+  // ✅ Cleanup on unmount
   useEffect(() => {
     isMountedRef.current = true;
-    
+
     return () => {
       isMountedRef.current = false;
       // Cancel any ongoing fetch requests
@@ -81,7 +82,7 @@ export function Chat({ onChatUpdate }: ChatProps) {
     };
   }, []);
 
-  // Save chat history
+  // Save chat history - only when messages change and not on initial mount
   useEffect(() => {
     if (!isInitialMount.current && messages.length > 1) {
       localStorage.setItem("isl_chat_history", JSON.stringify(messages));
@@ -95,7 +96,6 @@ export function Chat({ onChatUpdate }: ChatProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // ✅ UPDATED: Send message with AbortController
   const sendMessage = async (text: string = input) => {
     if (!text.trim() || isLoading) return;
 
@@ -124,7 +124,8 @@ export function Chat({ onChatUpdate }: ChatProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           message: text,
-          context: "You are an ISL tutor. Provide educational, accurate, and helpful responses about Indian Sign Language, Deaf culture, and ISL grammar. Keep responses concise and informative.",
+          context:
+            "You are an ISL tutor. Provide educational, accurate, and helpful responses about Indian Sign Language, Deaf culture, and ISL grammar. Keep responses concise and informative.",
         }),
         signal: controller.signal, // ✅ Add abort signal
       });
@@ -164,14 +165,13 @@ export function Chat({ onChatUpdate }: ChatProps) {
         setCurrentGloss(glossData.gloss || []);
         setSignReplayKey((prev) => prev + 1);
       }
-
     } catch (error: any) {
       // ✅ Ignore abort errors (user navigated away)
-      if (error.name === 'AbortError') {
-        console.log('Request cancelled (user left page)');
+      if (error.name === "AbortError") {
+        console.log("Request cancelled (user left page)");
         return;
       }
-      
+
       if (isMountedRef.current) {
         const errorMsg: Message = {
           id: (Date.now() + 1).toString(),
@@ -219,7 +219,6 @@ export function Chat({ onChatUpdate }: ChatProps) {
     }
   };
 
-  // ... rest of your JSX remains the same
   return (
     <div className="space-y-4">
       {/* Suggested Questions */}
@@ -296,7 +295,9 @@ export function Chat({ onChatUpdate }: ChatProps) {
             <div className="bg-white/10 border border-white/10 rounded-2xl p-3">
               <div className="flex items-center gap-2">
                 <Loader2 className="w-4 h-4 text-cyan-400 animate-spin" />
-                <span className="text-sm text-white/60">Avatar is preparing a response...</span>
+                <span className="text-sm text-white/60">
+                  Avatar is preparing a response...
+                </span>
               </div>
             </div>
           </div>

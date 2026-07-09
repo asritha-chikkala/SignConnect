@@ -15,7 +15,6 @@ export default function LearnPage() {
   const [chatHistory, setChatHistory] = useState<any[]>([]);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // Load chat history - only on mount and when refreshKey changes
   useEffect(() => {
     const saved = localStorage.getItem("isl_chat_history");
     if (saved) {
@@ -31,10 +30,14 @@ export default function LearnPage() {
     setRefreshKey((prev) => prev + 1);
   };
 
+  // ✅ ADD THIS
+  const handleTabChange = (tab: typeof activeTab) => {
+    setActiveTab(tab);
+  };
+
   return (
     <AppShell>
       <div className="max-w-5xl mx-auto">
-        {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold text-cyan-100" style={{ fontFamily: "var(--font-syne)" }}>
@@ -50,10 +53,9 @@ export default function LearnPage() {
           </div>
         </div>
 
-        {/* Tabs */}
         <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
           <button
-            onClick={() => setActiveTab("chat")}
+            onClick={() => handleTabChange("chat")}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl transition ${
               activeTab === "chat"
                 ? "bg-gradient-to-r from-cyan-500/30 to-purple-500/30 text-white border border-cyan-500/30"
@@ -64,7 +66,7 @@ export default function LearnPage() {
             AI Tutor
           </button>
           <button
-            onClick={() => setActiveTab("flashcards")}
+            onClick={() => handleTabChange("flashcards")}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl transition ${
               activeTab === "flashcards"
                 ? "bg-gradient-to-r from-cyan-500/30 to-purple-500/30 text-white border border-cyan-500/30"
@@ -75,7 +77,7 @@ export default function LearnPage() {
             Flashcards
           </button>
           <button
-            onClick={() => setActiveTab("quiz")}
+            onClick={() => handleTabChange("quiz")}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl transition ${
               activeTab === "quiz"
                 ? "bg-gradient-to-r from-cyan-500/30 to-purple-500/30 text-white border border-cyan-500/30"
@@ -86,7 +88,7 @@ export default function LearnPage() {
             Quiz
           </button>
           <button
-            onClick={() => setActiveTab("history")}
+            onClick={() => handleTabChange("history")}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl transition ${
               activeTab === "history"
                 ? "bg-gradient-to-r from-cyan-500/30 to-purple-500/30 text-white border border-cyan-500/30"
@@ -98,15 +100,13 @@ export default function LearnPage() {
           </button>
         </div>
 
-        {/* Content */}
         <Card className="p-6 border-white/10">
-          {activeTab === "chat" && <Chat onChatUpdate={refreshHistory} />}
-          {activeTab === "flashcards" && <Flashcards />}
-          {activeTab === "quiz" && <Quiz />}
-          {activeTab === "history" && <ChatHistory history={chatHistory} />}
+          {activeTab === "chat" && <Chat key="chat" onChatUpdate={refreshHistory} />}
+          {activeTab === "flashcards" && <Flashcards key="flashcards" />}
+          {activeTab === "quiz" && <Quiz key="quiz" />}
+          {activeTab === "history" && <ChatHistory key="history" history={chatHistory} />}
         </Card>
 
-        {/* Stats Footer */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
           <div className="p-3 rounded-xl bg-cyan-500/5 border border-cyan-500/20 text-center">
             <p className="text-2xl font-bold text-cyan-300">82+</p>
