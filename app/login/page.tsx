@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowser } from "@/lib/supabase-client";
@@ -16,6 +16,7 @@ import {
   Zap,
   Shield,
   MessageCircle,
+  CheckCircle,
 } from "lucide-react";
 
 export default function LoginPage() {
@@ -23,46 +24,104 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  const supabase = createSupabaseBrowser();
+
+  // ✅ Check if user just verified email
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash.includes('access_token') || hash.includes('code')) {
+      setSuccess("✅ Email verified! You can now login.");
+      // Clean up the URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
+
   const handleLogin = async () => {
     setError("");
+    setSuccess("");
+    
     if (!email || !password) {
       setError("Please enter email and password");
       return;
     }
 
     setLoading(true);
-    const supabase = createSupabaseBrowser();
-    const { error: loginError } = await supabase.auth.signInWithPassword({ email, password });
-    if (loginError) {
-      setError(loginError.message);
-      setLoading(false);
-      return;
-    }
 
-    const { data: userData } = await supabase.auth.getUser();
-    if (userData.user) {
-      if (!userData.user.email_confirmed_at) {
-        setError("Please verify your email before logging in.");
+    try {
+      const { error: loginError } = await supabase.auth.signInWithPassword({ 
+        email, 
+        password 
+      });
+
+      if (loginError) {
+        // ✅ Better error messages
+        if (loginError.message.includes("Email not confirmed")) {
+          setError("📧 Please verify your email before logging in. Check your inbox!");
+        } else {
+          setError(loginError.message);
+        }
         setLoading(false);
-        await supabase.auth.signOut();
         return;
       }
 
-      await supabase.from("profiles").upsert({
-        id: userData.user.id,
-        email: userData.user.email,
-      });
-    }
+      const { data: userData } = await supabase.auth.getUser();
+      
+      if (userData.user) {
+        if (!userData.user.email_confirmed_at) {
+          setError("📧 Please verify your email before logging in. Check your inbox!");
+          setLoading(false);
+          await supabase.auth.signOut();
+          return;
+        }
 
-    setLoading(false);
-    router.push("/");
+        // Update profile
+        await supabase.from("profiles").upsert({
+          id: userData.user.id,
+          email: userData.user.email,
+        });
+      }
+
+      setLoading(false);
+      router.push("/");
+      
+    } catch (err: any) {
+      setError(err.message || "Something went wrong");
+      setLoading(false);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") handleLogin();
+  };
+
+  // ✅ Resend verification email
+  const resendVerification = async () => {
+    if (!email) {
+      setError("Please enter your email address first.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+
+      if (error) throw error;
+      setSuccess("📨 Verification email resent! Check your inbox.");
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -81,6 +140,31 @@ export default function LoginPage() {
 
           {/* Form */}
           <div className="space-y-4">
+            {/* ✅ Success Message */}
+            {success && (
+              <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-emerald-400" />
+                  <p className="text-sm text-emerald-400">{success}</p>
+                </div>
+              </div>
+            )}
+
+            {/* ✅ Error Message */}
+            {error && (
+              <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3">
+                <p className="text-sm text-red-400">{error}</p>
+                {error.includes("verify your email") && (
+                  <button
+                    onClick={resendVerification}
+                    className="text-sm text-cyan-400 hover:text-cyan-300 mt-2 underline"
+                  >
+                    Resend verification email
+                  </button>
+                )}
+              </div>
+            )}
+
             <div>
               <label className="block text-sm font-medium text-white/70 mb-1.5">Email Address</label>
               <div className="relative">
@@ -120,12 +204,6 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {error && (
-              <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3">
-                <p className="text-sm text-red-400">{error}</p>
-              </div>
-            )}
-
             <Button
               className="w-full flex items-center justify-center gap-2 py-6 bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600 text-white font-semibold rounded-xl transition shadow-lg shadow-cyan-500/20"
               onClick={handleLogin}
@@ -159,7 +237,6 @@ export default function LoginPage() {
         </div>
 
         <div className="relative z-10 max-w-lg w-full text-center">
-          {/* Cute Avatar */}
           <div className="w-72 h-72 mx-auto mb-8">
             <CuteAvatar />
           </div>
@@ -209,7 +286,7 @@ export default function LoginPage() {
           </div>
 
           <p className="text-xs text-white/20 mt-6">
-            Built with ❤️ 
+            Built with ❤️
           </p>
         </div>
       </div>
