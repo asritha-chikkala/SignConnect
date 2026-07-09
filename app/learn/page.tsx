@@ -17,7 +17,7 @@ export default function LearnPage() {
   const [chatKey, setChatKey] = useState(0); // ✅ Force remount
 
   useEffect(() => {
-    const saved = localStorage.getItem("isl_chat_history");
+    const saved = sessionStorage.getItem("isl_chat_history");
     if (saved) {
       try {
         setChatHistory(JSON.parse(saved));
@@ -31,9 +31,10 @@ export default function LearnPage() {
     setRefreshKey((prev) => prev + 1);
   };
 
+  // ✅ Clean tab switching
   const handleTabChange = (tab: typeof activeTab) => {
     setActiveTab(tab);
-    // ✅ If switching AWAY from chat, increment key to destroy it
+    // If switching AWAY from chat, increment key to destroy it
     if (tab !== "chat") {
       setChatKey((prev) => prev + 1);
     }
@@ -105,7 +106,6 @@ export default function LearnPage() {
         </div>
 
         <Card className="p-6 border-white/10">
-          {/* ✅ Only render the active tab with a key that changes when leaving */}
           {activeTab === "chat" && <Chat key={`chat-${chatKey}`} onChatUpdate={refreshHistory} />}
           {activeTab === "flashcards" && <Flashcards key="flashcards" />}
           {activeTab === "quiz" && <Quiz key="quiz" />}

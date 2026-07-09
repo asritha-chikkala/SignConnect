@@ -48,11 +48,11 @@ export function Chat({ onChatUpdate }: ChatProps) {
   const abortControllerRef = useRef<AbortController | null>(null);
   const isMountedRef = useRef(true);
 
-  // Load saved chat history - only on initial mount
+  // Load saved chat history - only on initial mount using sessionStorage
   useEffect(() => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
-      const saved = localStorage.getItem("isl_chat_history");
+      const saved = sessionStorage.getItem("isl_chat_history");
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
@@ -82,13 +82,18 @@ export function Chat({ onChatUpdate }: ChatProps) {
     };
   }, []);
 
-  // Save chat history - only when messages change and not on initial mount
+  // ✅ Save chat history with limit (20 messages) and debounce using sessionStorage
   useEffect(() => {
     if (!isInitialMount.current && messages.length > 1) {
-      localStorage.setItem("isl_chat_history", JSON.stringify(messages));
-      if (onChatUpdate) {
-        onChatUpdate();
-      }
+      const timeoutId = setTimeout(() => {
+        const limitedMessages = messages.slice(-20);
+        sessionStorage.setItem("isl_chat_history", JSON.stringify(limitedMessages));
+        if (onChatUpdate) {
+          onChatUpdate();
+        }
+      }, 300);
+
+      return () => clearTimeout(timeoutId);
     }
   }, [messages, onChatUpdate]);
 
@@ -212,7 +217,7 @@ export function Chat({ onChatUpdate }: ChatProps) {
           timestamp: new Date(),
         },
       ]);
-      localStorage.removeItem("isl_chat_history");
+      sessionStorage.removeItem("isl_chat_history");
       if (onChatUpdate) {
         onChatUpdate();
       }
