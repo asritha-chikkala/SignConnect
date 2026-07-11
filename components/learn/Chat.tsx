@@ -312,7 +312,7 @@ export function Chat({ onChatUpdate }: ChatProps) {
 
       {/* Avatar for current signing */}
       {currentGloss.length > 0 && (
-        <div className="h-28 rounded-xl overflow-hidden bg-black/40 border border-white/10">
+        <div className="h-56 rounded-xl overflow-hidden bg-black/40 border border-white/10">
           <AvatarStage
             sentiment="neutral"
             lowBandwidth={false}

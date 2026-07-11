@@ -11,7 +11,7 @@ import { BRAND_NAME, BRAND_TAGLINE } from "@/lib/brand";
 export default function Home() {
   const features = [
     { icon: "🎙️", title: "Speech Recognition", desc: "Real-time transcription with Deepgram AI" },
-    { icon: "🤖", title: "AI Translation", desc: "Grok-powered ISL gloss conversion" },
+    { icon: "🤖", title: "AI Translation", desc: " ISL gloss conversion" },
     { icon: "🕸️", title: "Semantic Mapping", desc: "Neo4j graph for context-aware fallback" },
     { icon: "🧑", title: "3D Avatar", desc: "VRM avatar performs sign language" },
   ];
@@ -42,7 +42,7 @@ export default function Home() {
             <span className="gradient-text">AI Powered Real-Time<br/>ISL Translation</span>
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-white/72">
-            {BRAND_NAME} transforms live speech into expressive Indian Sign Language using Grok gloss intelligence, 
+            {BRAND_NAME} transforms live speech into expressive Indian Sign Language using  gloss intelligence, 
             semantic fallback mapping, and cinematic VRM signing.
           </p>
           

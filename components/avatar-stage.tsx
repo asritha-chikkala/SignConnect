@@ -94,7 +94,6 @@ function vrmModelUrls(customUrl?: string): string[] {
     urls.push(fromEnv);
   }
   
-  
   urls.push("/avatars/male-professional.vrm");
   urls.push("/avatars/female-professional.vrm");
   urls.push("/avatars/female-casual.vrm");
@@ -157,97 +156,42 @@ function applyHueToMeshes(root: THREE.Object3D, hue01: number) {
   });
 }
 
-// ===== DEFAULT ATTENTION POSITION =====
+// ===== DEFAULT NEUTRAL POSITION (HANDS DOWN, RELAXED) =====
 function setDefaultAttentionPosition(root: THREE.Object3D) {
-  // Try multiple common bone naming conventions
-  const leftArm = root.getObjectByName('LeftArm') || 
-                  root.getObjectByName('leftArm') || 
-                  root.getObjectByName('Arm_L') || 
-                  root.getObjectByName('J_Bip_L_UpperArm') ||
-                  root.getObjectByName('J_Bip_LeftUpperArm') ||
-                  root.getObjectByName('upperarm_l') ||
-                  root.getObjectByName('L_UpperArm');
-  
-  const rightArm = root.getObjectByName('RightArm') || 
-                   root.getObjectByName('rightArm') || 
-                   root.getObjectByName('Arm_R') || 
-                   root.getObjectByName('J_Bip_R_UpperArm') ||
-                   root.getObjectByName('J_Bip_RightUpperArm') ||
-                   root.getObjectByName('upperarm_r') ||
-                   root.getObjectByName('R_UpperArm');
-  
-  const leftForearm = root.getObjectByName('LeftForearm') || 
-                      root.getObjectByName('leftForearm') || 
-                      root.getObjectByName('Forearm_L') || 
-                      root.getObjectByName('J_Bip_L_LowerArm') ||
-                      root.getObjectByName('J_Bip_LeftLowerArm') ||
-                      root.getObjectByName('lowerarm_l') ||
-                      root.getObjectByName('L_LowerArm');
-  
-  const rightForearm = root.getObjectByName('RightForearm') || 
-                       root.getObjectByName('rightForearm') || 
-                       root.getObjectByName('Forearm_R') || 
-                       root.getObjectByName('J_Bip_R_LowerArm') ||
-                       root.getObjectByName('J_Bip_RightLowerArm') ||
-                       root.getObjectByName('lowerarm_r') ||
-                       root.getObjectByName('R_LowerArm');
-  
-  const head = root.getObjectByName('Head') || 
-               root.getObjectByName('head') || 
-               root.getObjectByName('J_Bip_C_Head') ||
-               root.getObjectByName('J_Bip_Head') ||
-               root.getObjectByName('head_jnt');
-  
-  const spine = root.getObjectByName('Spine') || 
-                root.getObjectByName('spine') || 
-                root.getObjectByName('J_Bip_C_Spine') ||
-                root.getObjectByName('J_Bip_Spine') ||
-                root.getObjectByName('hips') ||
-                root.getObjectByName('Hips');
-  
-  // Log what was found for debugging
-  console.log('🔍 Bone search results:');
-  console.log('  Left Arm:', leftArm ? '✅ Found' : '❌ Not found');
-  console.log('  Right Arm:', rightArm ? '✅ Found' : '❌ Not found');
-  console.log('  Left Forearm:', leftForearm ? '✅ Found' : '❌ Not found');
-  console.log('  Right Forearm:', rightForearm ? '✅ Found' : '❌ Not found');
-  console.log('  Head:', head ? '✅ Found' : '❌ Not found');
-  console.log('  Spine:', spine ? '✅ Found' : '❌ Not found');
-  
-  // Set attention position - arms slightly forward, relaxed
-  if (leftArm) {
-    leftArm.rotation.z = 0.08;
-    leftArm.rotation.x = -0.05;
-    console.log('✅ Left arm position set');
+  // Find all arm bones
+  const armBones = [
+    'LeftArm', 'leftArm', 'Arm_L', 'J_Bip_L_UpperArm', 'J_Bip_LeftUpperArm', 'upperarm_l', 'L_UpperArm',
+    'RightArm', 'rightArm', 'Arm_R', 'J_Bip_R_UpperArm', 'J_Bip_RightUpperArm', 'upperarm_r', 'R_UpperArm',
+    'LeftForearm', 'leftForearm', 'Forearm_L', 'J_Bip_L_LowerArm', 'J_Bip_LeftLowerArm', 'lowerarm_l', 'L_LowerArm',
+    'RightForearm', 'rightForearm', 'Forearm_R', 'J_Bip_R_LowerArm', 'J_Bip_RightLowerArm', 'lowerarm_r', 'R_LowerArm'
+  ];
+
+  for (const boneName of armBones) {
+    const bone = root.getObjectByName(boneName);
+    if (bone) {
+      // Set to neutral rotation (0, 0, 0) - arms down, relaxed
+      bone.rotation.set(0, 0, 0);
+    }
   }
-  if (rightArm) {
-    rightArm.rotation.z = -0.08;
-    rightArm.rotation.x = -0.05;
-    console.log('✅ Right arm position set');
-  }
-  if (leftForearm) {
-    leftForearm.rotation.x = 0.02;
-    console.log('✅ Left forearm position set');
-  }
-  if (rightForearm) {
-    rightForearm.rotation.x = 0.02;
-    console.log('✅ Right forearm position set');
-  }
+
+  // Slight natural tilt for head and spine
+  const head = root.getObjectByName('Head') || root.getObjectByName('head') || root.getObjectByName('J_Bip_C_Head');
   if (head) {
     head.rotation.x = 0.02;
-    console.log('✅ Head position set');
   }
+
+  const spine = root.getObjectByName('Spine') || root.getObjectByName('spine') || root.getObjectByName('J_Bip_C_Spine');
   if (spine) {
     spine.rotation.x = 0.01;
-    console.log('✅ Spine position set');
   }
+
+  console.log('✅ Avatar set to NEUTRAL position (hands down)');
 }
 
 // ===== FACIAL EXPRESSIONS =====
 function setFacialExpression(vrm: VRM, sentiment: Sentiment, intensity: number = 0.7) {
   if (!vrm.expressionManager) return;
   
-  // Get available expression names from the VRM model
   const availableExpressions: string[] = [];
   try {
     const exprManager = vrm.expressionManager as any;
@@ -257,20 +201,15 @@ function setFacialExpression(vrm: VRM, sentiment: Sentiment, intensity: number =
       }
     }
   } catch (e) {
-    // Fallback common expressions
     availableExpressions.push('happy', 'joy', 'angry', 'aa', 'oh', 'surprised', 'fun', 'blink', 'sad');
   }
   
-  // Reset all expressions to 0 first
   for (const name of availableExpressions) {
     try {
       vrm.expressionManager.setValue(name, 0);
-    } catch (e) {
-      // Ignore
-    }
+    } catch (e) {}
   }
   
-  // Map sentiment to expression values
   let expressionValues: { name: string; value: number }[] = [];
   
   switch (sentiment) {
@@ -295,21 +234,16 @@ function setFacialExpression(vrm: VRM, sentiment: Sentiment, intensity: number =
         { name: 'surprised', value: intensity * 0.3 },
       ];
       break;
-    case 'neutral':
     default:
       expressionValues = [];
-      break;
   }
   
-  // Apply expressions (only if they exist in the model)
   for (const expr of expressionValues) {
     try {
       if (availableExpressions.includes(expr.name)) {
         vrm.expressionManager.setValue(expr.name, expr.value);
       }
-    } catch (e) {
-      // Expression not supported, ignore
-    }
+    } catch (e) {}
   }
 }
 
@@ -435,7 +369,6 @@ export function AvatarStage({
     const width = outer.clientWidth;
     const camera = new THREE.PerspectiveCamera(45, width / 360, 0.1, 1000);
     
-    // ===== WEBGL RENDERER WITH CONTEXT HANDLING =====
     let renderer: THREE.WebGLRenderer;
     try {
       renderer = new THREE.WebGLRenderer({
@@ -449,7 +382,6 @@ export function AvatarStage({
         preserveDrawingBuffer: false,
       });
       
-      // Handle context loss
       renderer.domElement.addEventListener('webglcontextlost', (event) => {
         event.preventDefault();
         console.warn('⚠️ WebGL context lost. Attempting to recover...');
@@ -520,13 +452,16 @@ export function AvatarStage({
     const attachModel = (root: THREE.Object3D, vrm: VRM | null, clips: Map<string, THREE.AnimationClip>) => {
       if (cancelled) return;
       if (modelRootRef.current) scene.remove(modelRootRef.current);
+      
       modelRootRef.current = root;
       root.position.y = -0.05;
       root.scale.set(0.95, 0.95, 0.95);
+      
       const yawEnv = process.env.NEXT_PUBLIC_VRM_YAW_OFFSET;
       const yawParsed = yawEnv !== undefined && yawEnv !== "" ? Number(yawEnv) : NaN;
       avatarBaseYawRef.current = Number.isFinite(yawParsed) ? yawParsed : Math.PI;
       root.rotation.y = avatarBaseYawRef.current;
+      
       scene.add(root);
       vrmRef.current = vrm;
       mixerRef.current = new THREE.AnimationMixer(root);
@@ -627,6 +562,28 @@ export function AvatarStage({
       lastTime = now;
       time += delta;
 
+      // ===== FORCE NEUTRAL POSE EVERY FRAME (FIX T-POSE) =====
+      const root = modelRootRef.current;
+      if (root) {
+        // Force arms to neutral position (0, 0, 0)
+        const armBones = [
+          'LeftArm', 'leftArm', 'Arm_L', 'J_Bip_L_UpperArm', 'J_Bip_LeftUpperArm', 'upperarm_l', 'L_UpperArm',
+          'RightArm', 'rightArm', 'Arm_R', 'J_Bip_R_UpperArm', 'J_Bip_RightUpperArm', 'upperarm_r', 'R_UpperArm',
+          'LeftForearm', 'leftForearm', 'Forearm_L', 'J_Bip_L_LowerArm', 'J_Bip_LeftLowerArm', 'lowerarm_l', 'L_LowerArm',
+          'RightForearm', 'rightForearm', 'Forearm_R', 'J_Bip_R_LowerArm', 'J_Bip_RightLowerArm', 'lowerarm_r', 'R_LowerArm'
+        ];
+        
+        for (const name of armBones) {
+          const bone = root.getObjectByName(name);
+          if (bone) {
+            bone.rotation.x = 0;
+            bone.rotation.y = 0;
+            bone.rotation.z = 0;
+          }
+        }
+      }
+      // ===== END FORCE NEUTRAL POSE =====
+
       mixerRef.current?.update(delta);
       vrmRef.current?.update(delta);
 
@@ -637,7 +594,6 @@ export function AvatarStage({
         setFacialExpression(vrmRef.current, currentSentiment, targetIntensity);
       }
 
-      const root = modelRootRef.current;
       if (root) {
         const base = 0.95;
         const mx = learningMirrorRef.current ? -base : base;
@@ -686,7 +642,6 @@ export function AvatarStage({
       mixerRef.current?.stopAllAction();
       mixerRef.current = null;
       
-      // Proper WebGL disposal
       if (rendererRef.current) {
         rendererRef.current.dispose();
         rendererRef.current.forceContextLoss?.();
@@ -710,7 +665,6 @@ export function AvatarStage({
       tintVrmMaterials(modelRootRef.current, sentiment, SENTIMENT_THEME[sentiment].intensity);
       applyHueToMeshes(modelRootRef.current, appearanceHue);
       
-      // Update facial expression when sentiment changes
       if (vrmRef.current) {
         setFacialExpression(vrmRef.current, sentiment, 0.7);
       }
@@ -746,7 +700,7 @@ export function AvatarStage({
 
     mixer.stopAllAction();
     activeActionRef.current = null;
-    vrm?.humanoid?.resetNormalizedPose();
+    // vrm?.humanoid?.resetNormalizedPose(); // COMMENTED OUT - Fixes stretched pose
 
     const run = async () => {
       const plan = buildSignPlanFromGloss(gloss);
@@ -769,7 +723,7 @@ export function AvatarStage({
           stepTotal: plan.length,
         });
 
-        vrm?.humanoid?.resetNormalizedPose();
+        // vrm?.humanoid?.resetNormalizedPose(); // COMMENTED OUT - Fixes stretched pose
 
         let clip: THREE.AnimationClip | undefined;
         if (step.kind === "clip") {
@@ -803,7 +757,7 @@ export function AvatarStage({
 
       if (!signal.aborted) {
         pushHud({ phase: "idle", detail: "Sequence complete", stepIndex: plan.length, stepTotal: plan.length });
-        vrm?.humanoid?.resetNormalizedPose();
+        // vrm?.humanoid?.resetNormalizedPose(); // COMMENTED OUT - Fixes stretched pose
       }
     };
 
