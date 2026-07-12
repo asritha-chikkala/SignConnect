@@ -1,5 +1,5 @@
-<img width="4320" height="1440" alt="Banner" src="https://github.com/user-attachments/assets/c698b2cd-da84-4cb0-9276-125c6a7244aa" />
 
+<img width="4320" height="1440" alt="Banner" src="https://github.com/user-attachments/assets/c698b2cd-da84-4cb0-9276-125c6a7244aa" />
 # 🚀 SignConnect - AI-Powered Indian Sign Language Accessibility Platform
 
 
