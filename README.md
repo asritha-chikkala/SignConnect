@@ -210,20 +210,6 @@ This enabled our team to:
 
 ---
 
-# 🏗 System Architecture
-
-```mermaid
-flowchart LR
-A[Speech/Text] --> B[Sarvaam AI]
-B --> C[ISL Gloss]
-C --> D[VRM Avatar]
-
-E[Camera] --> F[CNN MobileNetV2]
-F --> G[Prediction]
-G --> H[Text]
-```
-
----
 
 ## ✨ Key Features
 
