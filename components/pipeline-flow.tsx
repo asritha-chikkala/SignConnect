@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 const steps = [
   "Speech",
   "Text",
-  "Grok AI Gloss Conversion",
+  " AI Gloss Conversion",
   "Neo4j Semantic Mapping",
   "ISL Gloss",
   "VRM Sign Animation",

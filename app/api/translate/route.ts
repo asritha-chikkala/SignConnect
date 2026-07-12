@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import type { Sentiment } from "@/lib/utils";
-// ✅ Import Neo4j functions (won't break anything if Neo4j is not connected)
 import { getMultipleSignsFromNeo4j, getSignFromNeo4j } from "@/services/neo4j";
 
 function detectSentiment(transcript: string): Sentiment {
@@ -17,7 +16,67 @@ export async function POST(request: Request) {
     
     console.log("📝 Translator - Processing:", transcript);
     
-    // ===== STEP 1: Try Groq API (Primary) =====
+    // ===== STEP 1: Try Sarvaam AI (Primary) =====
+    const sarvaamApiKey = process.env.SARVAAM_API_KEY;
+    
+    if (sarvaamApiKey) {
+      try {
+        const response = await fetch("https://api.sarvaam.ai/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${sarvaamApiKey}`,
+          },
+          body: JSON.stringify({
+            model: "sarvaam-v1",
+            messages: [
+              {
+                role: "system",
+                content: `You convert English to Indian Sign Language (ISL) style gloss for a signer avatar.
+Respond with JSON only, no markdown, matching: {"gloss":["TOKEN1","TOKEN2"],"sentiment":"neutral|question|urgent|happy"}.
+Use concise upper-case gloss tokens. Keep 1-12 tokens when possible.`
+              },
+              {
+                role: "user",
+                content: `English: ${transcript}`,
+              },
+            ],
+            temperature: 0.35,
+            max_tokens: 220,
+          }),
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          const content = data.choices?.[0]?.message?.content || "";
+          
+          try {
+            const jsonMatch = content.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+              const parsed = JSON.parse(jsonMatch[0]);
+              if (parsed.gloss && Array.isArray(parsed.gloss)) {
+                const sentiment = parsed.sentiment || detectSentiment(transcript);
+                return NextResponse.json({
+                  transcript,
+                  gloss: parsed.gloss.map((g: string) => g.toUpperCase()),
+                  sentiment,
+                  unknownWords: [],
+                  processing: false,
+                  sentimentFromAI: true,
+                  source: "sarvaam",
+                });
+              }
+            }
+          } catch (e) {
+            console.log("JSON parse error, using fallback");
+          }
+        }
+      } catch (error) {
+        console.log("Sarvaam AI error:", error);
+      }
+    }
+    
+    // ===== STEP 2: Try Groq API (Fallback) =====
     const groqApiKey = process.env.GROQ_API_KEY;
     
     if (groqApiKey) {
@@ -63,7 +122,8 @@ Use concise upper-case gloss tokens. Keep 1-12 tokens when possible.`
                   sentiment,
                   unknownWords: [],
                   processing: false,
-                  sentimentFromGrok: true,
+                  sentimentFromAI: true,
+                  source: "groq-fallback",
                 });
               }
             }
@@ -76,7 +136,7 @@ Use concise upper-case gloss tokens. Keep 1-12 tokens when possible.`
       }
     }
     
-    // ===== STEP 2: Try Neo4j (Secondary - WON'T BREAK ANYTHING) =====
+    // ===== STEP 3: Try Neo4j (Secondary Fallback) =====
     let neo4jGloss: string[] = [];
     let neo4jSuccess = false;
     
@@ -85,26 +145,21 @@ Use concise upper-case gloss tokens. Keep 1-12 tokens when possible.`
       const result = await getMultipleSignsFromNeo4j(words);
       
       if (result.size > 0) {
-        // Build gloss from Neo4j results
         for (const word of words) {
           const lower = word.toLowerCase();
           if (result.has(lower)) {
             neo4jGloss.push(result.get(lower)!);
           } else {
-            // If Neo4j doesn't have this word, check if it's a known word
-            // Using the existing dictionary from fallback.ts
             const knownWords = ['hello', 'help', 'hospital', 'thank', 'you', 'happy', 'danger', 'emergency', 'please', 'sorry'];
             if (knownWords.includes(lower)) {
               neo4jGloss.push(lower.toUpperCase());
             } else {
-              // If all else fails, just use the word itself
               neo4jGloss.push(lower.toUpperCase());
             }
           }
         }
         neo4jSuccess = true;
       } else {
-        // Fallback: try single word lookup
         for (const word of words) {
           const result = await getSignFromNeo4j(word);
           if (result) {
@@ -117,10 +172,8 @@ Use concise upper-case gloss tokens. Keep 1-12 tokens when possible.`
       }
     } catch (neo4jError) {
       console.log("Neo4j not available, skipping...");
-      // Neo4j failing won't break anything
     }
     
-    // If Neo4j worked, return its result
     if (neo4jSuccess && neo4jGloss.length > 0) {
       const sentiment = detectSentiment(transcript);
       return NextResponse.json({
@@ -129,12 +182,12 @@ Use concise upper-case gloss tokens. Keep 1-12 tokens when possible.`
         sentiment,
         unknownWords: [],
         processing: false,
-        sentimentFromGrok: false,
-        source: "neo4j", // Just for debugging
+        sentimentFromAI: false,
+        source: "neo4j",
       });
     }
     
-    // ===== STEP 3: Simple Fallback (Always works) =====
+    // ===== STEP 4: Ultimate Fallback (Always works) =====
     const fallbackGloss = transcript
       .toUpperCase()
       .split(/\s+/)
@@ -149,7 +202,8 @@ Use concise upper-case gloss tokens. Keep 1-12 tokens when possible.`
       sentiment,
       unknownWords: [],
       processing: false,
-      sentimentFromGrok: false,
+      sentimentFromAI: false,
+      source: "dictionary",
     });
     
   } catch (error) {
