@@ -13,6 +13,7 @@
 ![Supabase](https://img.shields.io/badge/Supabase-Database-green)
 ![Neo4j](https://img.shields.io/badge/Neo4j-AuraDB-018BFF)
 ![Render](https://img.shields.io/badge/Deploy-Render-46E3B7)
+![Browser Extension](https://img.shields.io/badge/Browser_Extension-Chrome-22d3ee?style=flat&logo=googlechrome)
 
 
 
@@ -276,6 +277,25 @@ SignConnect detects specific words and triggers smart actions automatically:
 - ✅ Avatar Signing - Avatar signs the transcript in ISL
 - ✅ Manual Input - Paste transcript manually
 
+### 🌐 Browser Extension
+
+- ✅ **Sign Any Text, Anywhere** - Select text on any webpage and sign it with the 3D avatar
+- ✅ **Right-Click Integration** - Just right-click selected text → "Sign with SignConnect"
+- ✅ **Keyboard Shortcut** - Press `Ctrl+Shift+S`  to sign selected text
+- ✅ **Non-Intrusive** - Avatar appears only when you want it, auto-closes after signing
+- ✅ **Works Everywhere** - Works on any webpage (Wikipedia, news, emails, YouTube captions)
+- ✅ **Instant Signing** - No copy-paste, no extra steps
+
+### 🎯 How the Extension Works
+
+1. Select any text on any webpage
+2. Right-click → "🤟 Sign with SignConnect"
+3. Or press `Ctrl+Shift+S`
+4. The 3D avatar appears and signs the text in ISL
+5. Auto-closes after signing completes
+
+> 💡 *Example: Select text on Wikipedia → Right-click → Sign with SignConnect → Avatar signs it instantly!*
+
 ### 👤 User Dashboard
 - ✅ Authentication - Supabase email/password auth
 - ✅ Profile Management - View and manage account
@@ -301,6 +321,11 @@ SignConnect detects specific words and triggers smart actions automatically:
 |-------------|-----------|
 | ![](screenshots/sign.png) | ![](screenshots/learn.png) |
 
+|Browser_Extension |
+|-------------|-----------|
+| ![](screenshots/browser_extension.png) | 
+
+
 | Dashboard | Video Captioning |
 |-------------|-----------|
 | ![](screenshots/dashboard.png) | ![](screenshots/caption.png) |
@@ -323,6 +348,19 @@ cp .env.example .env.local
 npm run dev
 ```
 
+### 🔧 Browser Extension 
+
+1. Download the `browser-extension` folder from the repository
+2. Open Chrome and go to `chrome://extensions/`
+3. Enable **Developer Mode** (top right toggle)
+4. Click **Load unpacked**
+5. Select the `browser-extension` folder
+6. Pin the extension icon in your toolbar
+
+**Usage:**
+- Select text on any webpage
+- Right-click → "🤟 Sign with SignConnect"
+- Or press `Ctrl+Shift+S`
 ---
 
 # 🔐 Environment Variables
@@ -373,17 +411,13 @@ https://signconnect-qvx7.onrender.com
 # GitHub Repository
 https://github.com/asritha-chikkala/SignConnect
 
-# 🧬 Future Scope
+# ## 🧬 Future Scope
 
-- Word-level Recognition
-- Sentence Translation
-- Android App
-- iOS App
-- Offline AI
-- AR Glasses
-- Regional Languages
-- Larger Vocabulary
-- Expo App
+- **Expo Mobile App** –  App for on-the-go ISL translation
+- **Word-Level Recognition** – Expand from letters to full word recognition using LSTM
+- **Regional Languages** – Support for Hindi, Tamil, Telugu, and other Indian languages
+- **Offline AI** – Run ML model locally without internet dependency
+
 
 ---
 
