@@ -1,285 +1,392 @@
-# 🚀 SignConnect - AI-Powered Indian Sign Language Translator
+<img width="4320" height="1440" alt="Banner" src="https://github.com/user-attachments/assets/c698b2cd-da84-4cb0-9276-125c6a7244aa" />
 
-> Breaking communication barriers with real-time ISL translation, 3D
-> avatar signing, and AI-powered learning.
+# 🚀 SignConnect - AI-Powered Indian Sign Language Accessibility Platform
 
-------------------------------------------------------------------------
 
-## 📌 Problem & Domain
+> Breaking communication barriers with AI-powered Indian Sign Language translation, real-time 3D avatar signing, sign recognition, and AI-assisted learning.
 
-**The Problem:** India has over **5 million deaf individuals** but only
-**250 certified sign language interpreters** - that's **1 interpreter
-for every 20,000 deaf people**. This massive gap leaves the Deaf
-community isolated from education, healthcare, and daily communication.
 
-**Our Solution:** SignConnect is an AI-powered platform that provides
-**real-time two-way communication** between hearing and deaf individuals
-through Indian Sign Language (ISL).
+![Next.js](https://img.shields.io/badge/Next.js-16-black)
+![React](https://img.shields.io/badge/React-19-61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
+![TensorFlow](https://img.shields.io/badge/TensorFlow-AI-orange)
+![Supabase](https://img.shields.io/badge/Supabase-Database-green)
+![Neo4j](https://img.shields.io/badge/Neo4j-AuraDB-018BFF)
+![Render](https://img.shields.io/badge/Deploy-Render-46E3B7)
 
-**Themes Selected:** - ✅ **Human Experience & Productivity** -
-Accessibility technology improving quality of life - ✅ **Learning &
-Knowledge Systems** - AI-powered ISL education platform - ✅
-**HealthTech & Bio Platforms** - Enabling better healthcare
-communication
 
-------------------------------------------------------------------------
 
-## 🎯 Objective
+---
 
-**Target Users:** - Deaf and hard-of-hearing individuals in India - Sign
-language learners and interpreters - Healthcare providers, educators,
-and public service workers - Families of deaf individuals
+# 📑 Table of Contents
+1. Problem
+2. Objective
+3. Team
+4. Tech Stack
+5. Architecture
+6. Features
+7. Screenshots
+8. Installation
+9. Environment Variables
+10. Future Scope
+11. Resources
+12. Acknowledgements
 
-**The Pain Point:** - Only 250 certified interpreters for 5M+ deaf
-individuals - No accessible real-time translation tools for ISL -
-Limited resources for learning ISL - Communication barriers in
-emergencies, healthcare, and education
+---
 
-**Our Solution:** - **Speech-to-Sign:** Real-time translation from
-English to ISL with 3D avatar - **Sign-to-Text:** 99% accurate ML model
-for ISL alphabet recognition - **AI Tutor:** Learn ISL with personalized
-AI assistance - **Video Captioning:** Convert video content to ISL
-signing
+# 📌 Problem & Domain
 
-------------------------------------------------------------------------
+India has more than **5 million Deaf and Hard-of-Hearing individuals**, while the number of certified Indian Sign Language interpreters remains extremely limited. This creates communication barriers in education, healthcare, workplaces, banking, and government services.
 
-## 🧠 Team & Approach
+### Themes
+- ✅ Human Experience & Productivity
+- ✅ Learning & Knowledge Systems
+- ✅ HealthTech & Bio Platforms
 
-### Team Name:
+---
 
+# 🎯 Objective
+
+## Target Users
+- Deaf community
+- Hard-of-hearing individuals
+- Families
+- ISL learners
+- Teachers
+- Doctors
+- Public service providers
+
+## Solution
+SignConnect is a complete accessibility platform providing:
+
+- Speech → ISL
+- Text → ISL
+- Sign → Text
+- AI Tutor
+- Video Captioning
+- Learning Platform
+
+---
+
+# 👥 Team
+
+## Team Name
 Vector Vortex
 
-### Team Members:
+### Members
 
-- Chikkala Asritha
-- Merikela Geeta Sanjana
+- Chikkala Asritha — Full Stack Developer, AI/ML
+- Merikela Geeta Sanjana — UI/UX & Testing
 
-### Our Approach:
+---
 
-**Why we chose this problem:** Sign language is the primary
-communication method for millions but remains inaccessible to most. With
-India's interpreter shortage, technology is the only scalable solution.
+# 🛠 Tech Stack
 
-**Key Challenges Addressed:** 1. **Real-time performance** - Optimized
-3D avatar animations for smooth signing 2. **Accurate sign
-recognition** - Built ML model with 99.17% accuracy 3. **Limited ISL
-data** - Used transfer learning with MobileNetV2 on ISLRTC dataset 4.
-**Cross-platform access** - Web app deployed on Render for universal
-access
+## Frontend
+- Next.js 16
+- React 19
+- TypeScript
+- Tailwind CSS
+- Framer Motion
+- Three.js
+- React Three Fiber
+- VRM
 
-**Breakthroughs:** - Achieved 99.17% accuracy on ISL alphabet
-recognition - Integrated Groq AI for natural language to ISL gloss
-translation - Built immersive 3D avatar using Three.js and VRM
+## Backend
+- Next.js API Routes
+- Supabase
 
-------------------------------------------------------------------------
+## Database
+- PostgreSQL
+- Neo4j AuraDB
 
-## 🛠️ Tech Stack
+## AI
+- Sarvaam AI
+- Groq AI
+- Groq Whisper
+- TensorFlow
+- MobileNetV2
+- Keras
 
-### Core Technologies Used:
+## Hosting
+- Render
 
-**Frontend:** - Next.js 16 (App Router) - React 19 with TypeScript -
-Tailwind CSS 4 - Framer Motion (Animations) - Three.js /
-@react-three/fiber (3D Avatar)
-
-**Backend:** - Next.js API Routes - Groq AI (Llama 3.3 70B + Whisper) -
-Supabase (Auth + Database) - Neo4j AuraDB (Graph Database)
-
-**AI/ML:** - TensorFlow + Keras (ML Model) - MobileNetV2 (Transfer
-Learning) - Mediapipe (Pose Estimation - Reference)
-
-**Hosting:** - Render (Web App) - Supabase (Backend)
-
-### Additional Technologies Used:
-
--   ✅ **AI / ML** - Custom trained model with 99.17% accuracy
--   ✅ **Cloud** - Deployed on Render with auto-deploy from GitHub
--   ✅ **Neo4j** - Semantic graph database for sign relationships
-
-------------------------------------------------------------------------
-
-## 🏆 Sponsored Track
+---
 
 
--   ✅ **Neo4j Track** -- Uses AuraDB for semantic sign relationships
--   ✅ **Base44 Track** -- Prototype built with rapid iteration
--   ✅ **Sarvaam AI Track** -- AI-powered translation
--   ✅ **Render Workflows** -- Deployed on Render with CI/CD
 
-### Neo4j Implementation:
+# 🏆 Sponsored Tracks
 
-Our Neo4j AuraDB stores ISL signs as graph nodes with semantic
-relationships. This enables: - **Semantic sign lookup** - Finding
-related signs - **Learning paths** - Connecting signs by category and
-difficulty - **Faster fallback** - When AI translation fails, Neo4j
-provides semantic matches
+Our project participates in the following sponsored tracks:
 
-------------------------------------------------------------------------
+- [x] **Neo4j Track** – Uses Neo4j AuraDB as the graph database
+- [x] **Base44 Track** – Used for rapid prototyping and UI iteration
+- [x] **Sarvaam AI Track** – AI-powered English to ISL Gloss translation
+- [x] **Render Workflows Track** – Automated deployment and CI/CD
+
+
+---
+
+# 🤝 How We Used the Partner Technologies
+
+## 🔷 Neo4j Track
+
+SignConnect uses **Neo4j AuraDB** as a graph database to represent Indian Sign Language (ISL) signs and their semantic relationships.
+
+Instead of storing isolated records, each sign is represented as a node connected to related signs, categories, and learning paths. This enables:
+
+- 🔍 Semantic sign lookup
+- 📚 Intelligent learning recommendations
+- ⚡ Faster fallback suggestions when AI translation is unavailable
+- 🧠 Relationship-based ISL knowledge representation
+
+
+## 🤖 Sarvaam AI Track
+
+Sarvaam AI serves as the **primary translation engine** for converting English sentences into **Indian Sign Language Gloss**.
+The generated gloss is then animated using our 3D VRM avatar.
+
+### Translation Flow
+
+```
+English Input
+      │
+      ▼
+ Sarvaam AI
+      │
+      ▼
+  ISL Gloss
+      │
+      ▼
+ 3D Avatar Animation
+```
+
+
+
+---
+
+## 🚀 Render Workflows Track
+
+The entire SignConnect platform is deployed on **Render**.
+
+We use Render's GitHub integration to automate deployment and CI/CD.
+
+### Render Features Used
+
+- ✅ Automatic deployment from GitHub
+- ✅ Environment variable management
+- ✅ Continuous Integration & Continuous Deployment
+- ✅ Secure HTTPS hosting
+- ✅ Production-ready backend hosting
+
+**Live Application**
+
+👉 https://signconnect-qvx7.onrender.com
+
+---
+
+## 🟣 Base44 Track
+
+Base44 was used during the initial stages of development to rapidly prototype the SignConnect user interface and validate accessibility-focused workflows.
+
+This enabled our team to:
+
+- Design user flows quickly
+- Validate accessibility features
+- Iterate on the interface with minimal development overhead
+- Refine the user experience before implementation
+
+---
+
+## 🌟 Impact of Partner Technologies
+
+| Partner | Contribution |
+|----------|--------------|
+| **Neo4j AuraDB** | Graph-based ISL knowledge representation |
+| **Sarvaam AI** | English → ISL Gloss translation |
+| **Groq AI** | High-speed AI inference and translation fallback |
+| **Render** | Deployment, hosting, and CI/CD |
+| **Base44** | Rapid prototyping and UI validation |
+
+---
+
+# 🏗 System Architecture
+
+```mermaid
+flowchart LR
+A[Speech/Text] --> B[Sarvaam AI]
+B --> C[ISL Gloss]
+C --> D[VRM Avatar]
+
+E[Camera] --> F[CNN MobileNetV2]
+F --> G[Prediction]
+G --> H[Text]
+```
+
+---
 
 ## ✨ Key Features
 
-### 🎯 Real-Time Speech-to-ISL
+### 🗣️ Speech-to-ISL Translator
+- ✅ Speech Input - Convert English speech to text
+- ✅ Text Input - Type text for translation
+- ✅ ISL Gloss Translation - Sarvaam AI / Groq AI
+- ✅ 3D VRM Avatar - Realistic avatar signs in real-time
+- ✅ Sentiment Detection - Happy, urgent, question, neutral
+- ✅ Emergency Mode - Urgent signing with visual alerts
+- ✅ Learning Tools - Slow-mo, mirror mode
+- ✅ Avatar Selector - Multiple VRM avatar styles
+- ✅ **Gesture Shortcuts** - Smart actions for everyday needs
+- ✅ Session Logging - Track translation history
+### ⚡ Gesture Shortcuts - Smart Actions
 
--   Convert English speech/text to ISL gloss
--   3D VRM avatar signs in real-time
--   Sentiment detection (happy, urgent, question, neutral)
--   Emergency mode for urgent situations
+SignConnect detects specific words and triggers smart actions automatically:
+
+| Say/Sign | Action |
+|----------|--------|
+| **HOSPITAL** | Opens Google Maps with nearby hospitals (confirmation required) |
+| **POLICE** | Opens Google Maps with nearby police stations (confirmation required) |
+| **HELP** | Shows emergency alert with contact information |
+| **EMERGENCY** | Shows emergency alert with 112 contact |
+| **PHONE** | Copies emergency number 112 to clipboard |
+| **LOCATION** | Shares your current location (confirmation required) |
+| **LIGHT** | Toggles device flashlight ON/OFF (mobile only) |
+
+
+
+> 💡 *Example: Type "hospital" and click Execute → Opens Google Maps with hospitals near you!*
 
 ### ✋ Sign-to-Text with 99% Accuracy
+- ✅ ML Model - Custom CNN with 99.17% accuracy
+- ✅ Dataset - 5,400+ ISL images (A-Z, 0-9)
+- ✅ Camera Integration - Real-time sign detection
+- ✅ Confidence Scoring - Shows prediction confidence
+- ✅ History Tracking - Tracks all detections
+- ✅ Top Predictions - Shows top 3 predictions
 
--   Custom CNN model trained on 5,400+ ISL images
--   Recognizes A-Z and 0-9 signs
--   Real-time camera detection
--   Confidence scoring and history tracking
-
-### 📚 AI-Powered Learning
-
--   AI Tutor using Groq Llama 3.3 70B
--   Flashcards with ISL signs
--   Interactive quizzes
--   Chat history with search
+### 🤖 AI-Powered ISL Learning
+- ✅ AI Tutor - Chat with Sarvaam AI / Groq AI
+- ✅ Flashcards - Learn ISL signs with flip animations
+- ✅ Interactive Quiz - Test your ISL knowledge
+- ✅ Chat History - View all previous conversations
+- ✅ Document Upload - Upload documents for context
 
 ### 🎥 Video Captioning
-
--   Upload videos for ISL captioning
--   YouTube URL support
--   Avatar signs the captions
--   Manual transcript input
+- ✅ Video Upload - Upload videos with audio
+- ✅ YouTube Support - Paste YouTube URL
+- ✅ Whisper Transcription - Groq Whisper for speech-to-text
+- ✅ Avatar Signing - Avatar signs the transcript in ISL
+- ✅ Manual Input - Paste transcript manually
 
 ### 👤 User Dashboard
+- ✅ Authentication - Supabase email/password auth
+- ✅ Profile Management - View and manage account
+- ✅ Learning Progress - Track your journey
+- ✅ Sign of the Day - Daily ISL sign widget
 
--   Supabase authentication
--   Profile management
--   Learning progress tracking
-
-------------------------------------------------------------------------
-
-## 📽️ Demo & Deliverables
-
--   **Demo Video Link:** 
--   **Deployment Link:** https://signconnect-qvx7.onrender.com
--   **GitHub Repository:**
-    https://github.com/asritha-chikkala/SignConnect
--   **Pitch Deck:** 
-
-------------------------------------------------------------------------
+### 🎯 Demo & Navigation
+- ✅ Demo Mode - Auto-play demonstration
+- ✅ Responsive Navigation - Desktop and mobile
+- ✅ Low Light Detector - Automatic brightness adjustment
+# 📸 Screenshots
 
 
+| Login | Signup |
+|-------------|-----------|
+| ![](screenshots/login.png) | ![](screenshots/signup.png) |
+
+| Home | Translator |
+|------|------------|
+| ![](screenshots/home.png) | ![](screenshots/translator.png) |
+
+| Recognition | AI Tutor |
+|-------------|-----------|
+| ![](screenshots/sign.png) | ![](screenshots/learn.png) |
+
+| Dashboard | Video Captioning |
+|-------------|-----------|
+| ![](screenshots/dashboard.png) | ![](screenshots/caption.png) |
+
+---
 
 
 
-## 🧪 How to Run the Project
-``` bash
-#How to Install
-pip install -r requirements.txt
+# 🚀 Installation
 
-
-### Local Setup:
-
-``` bash
-# 1. Clone the repository
+```bash
 git clone https://github.com/asritha-chikkala/SignConnect.git
+
 cd SignConnect
 
-# 2. Install dependencies
 npm install
 
-# 3. Set up environment variables
 cp .env.example .env.local
 
-# 4. Install Python dependencies (for ML model)
-pip install tensorflow opencv-python numpy scikit-learn joblib
-
-# 5. Run the development server
 npm run dev
-
-# 6. Open local host 
 ```
 
-### Environment Variables Needed:
+---
 
-``` env
-# ============================================
-# SUPABASE
-# ============================================
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE=your_supabase_service_role_key
+# 🔐 Environment Variables
 
-# ============================================
-# GROQ API
-# ============================================
-GROQ_API_KEY=your_groq_api_key
-
-# ============================================
-# DEEPGRAM API
-# ============================================
-DEEPGRAM_API_KEY=your_deepgram_api_key
-
-# ============================================
-# YOUTUBE API
-# ============================================
-YOUTUBE_API_KEY=your_youtube_api_key
-
-# ============================================
-# NEO4J (Graph Database)
-# ============================================
-NEO4J_URI=your_neo4j_uri
-NEO4J_USERNAME=your_neo4j_username
-NEO4J_PASSWORD=your_neo4j_password
-NEO4J_DATABASE=your_neo4j_database
-
-# ============================================
-# APP URL (Your Render Deployment)
-# ============================================
-NEXT_PUBLIC_APP_URL=https://your-app-name.onrender.com
-
-
+```env
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SARVAAM_API_KEY=
+GROQ_API_KEY=
+NEO4J_URI=
+NEO4J_USERNAME=
+NEO4J_PASSWORD=
+NEXT_PUBLIC_APP_URL=
 ```
 
-------------------------------------------------------------------------
+---
 
-## 🧬 Future Scope
+# 📈 Model Performance
 
--   📱 Full Expo Mobile App
--   🧠 Word-Level Sign Recognition
--   🌍 Multi-language Support
--   🎮 AR Integration
--   🤖 Custom Avatar Creation
--   📊 Analytics Dashboard
+| Model | Accuracy |
+|--------|---------:|
+| MobileNetV2 CNN | 99.17% |
 
-------------------------------------------------------------------------
+Dataset:
+- ISLRTC
+- 5400+ Images
+- A-Z
+- 0-9
 
-## 📎 Resources / Credits
+---
 
-**Datasets:** - ISLRTC Indian Sign Language Dataset - INCLUDE 50 Dataset
+# 🧬 Future Scope
 
-**Open Source Libraries:** - @pixiv/three-vrm - TensorFlow - Mediapipe
+- Word-level Recognition
+- Sentence Translation
+- Android App
+- iOS App
+- Offline AI
+- AR Glasses
+- Regional Languages
+- Larger Vocabulary
+- Expo App
 
-**APIs:** - Groq AI - Supabase - Neo4j AuraDB
+---
 
-**Acknowledgements:** - HackHazards '26 - ISLRTC - Open-source community
+# 🙏 Acknowledgements
 
-------------------------------------------------------------------------
+- HackHazards '26
+- Sarvaam AI
+- Neo4j
+- Supabase
+- Render
+- TensorFlow
+- Three.js
+- ISLRTC
 
-## 🏁 Final Words
+---
 
-Building SignConnect has been an incredible journey. We started with a
-simple idea: "What if we could break the communication barrier for the
-Deaf community?" Through this hackathon, we've built a working prototype
-that demonstrates the potential of AI to create **real social impact**.
+# ❤️ Final Words
 
-**Key Learnings:** - Transfer learning with MobileNetV2 can achieve
-remarkable accuracy with limited data - Real-time 3D avatar signing
-requires careful optimization - The gap between hearing and deaf
-individuals can be bridged with technology
+Technology should be accessible to everyone.
 
-**Shout-out to:** - Our teammates for their dedication and late-night
-debugging sessions - The HackHazards team - Everyone supporting
-accessibility
+SignConnect demonstrates how AI, Computer Vision, and 3D graphics can help bridge communication gaps and empower the Deaf community through inclusive technology.
 
-**SignConnect is more than a hackathon project - it's the beginning of a
-journey to make ISL accessible to everyone.**
-
-------------------------------------------------------------------------
-
-*Made with ❤️ for HackHazards '26*
+**Made with ❤️ by Team Vector Vortex**
