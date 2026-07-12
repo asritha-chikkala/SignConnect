@@ -3,7 +3,7 @@ import { spawn } from 'child_process';
 import path from 'path';
 import fs from 'fs';
 
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const formData = await request.formData();
     const image = formData.get('image') as File;
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Use spawn to avoid command-line length limits
-    return new Promise((resolve) => {
+    return new Promise<NextResponse>((resolve) => {
       const pythonProcess = spawn('python', [scriptPath]);
       
       let stdoutData = '';
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
             return;
           }
           
-          // ✅ Only accept predictions with confidence > 70%
+          // Only accept predictions with confidence > 70%
           if (result.confidence < 0.70) {
             resolve(NextResponse.json({ 
               success: false, 
