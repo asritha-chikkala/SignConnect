@@ -23,6 +23,7 @@ import { BRAND_FULL_TITLE, BRAND_NAME } from "@/lib/brand";
 export const metadata: Metadata = {
   title: BRAND_FULL_TITLE,
   description: `${BRAND_NAME} — real-time Indian Sign Language communication platform.`,
+  icons: "/favicon.ico",
   manifest: "/manifest.json",
 };
 

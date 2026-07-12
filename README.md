@@ -37,11 +37,22 @@
 # 📌 Problem & Domain
 
 India has more than **5 million Deaf and Hard-of-Hearing individuals**, while the number of certified Indian Sign Language interpreters remains extremely limited. This creates communication barriers in education, healthcare, workplaces, banking, and government services.
+**Themes Selected:**
+- [x] **Human Experience & Productivity** – Accessibility solution improving quality of life for 5M+ deaf individuals
+- [x] **Learning & Knowledge Systems** – AI-powered ISL education platform with AI Tutor, flashcards, and quizzes
+- [x] **HealthTech & Bio Platforms** – Healthcare communication for deaf patients and emergency response tools
+- [x] **Developer Tools & Software Infrastructure** – Full-stack Next.js app with TensorFlow ML, Neo4j graph database, and multiple API integrations
 
-### Themes
-- ✅ Human Experience & Productivity
-- ✅ Learning & Knowledge Systems
-- ✅ HealthTech & Bio Platforms
+---
+
+## Why These Themes?
+
+| Theme | How SignConnect Fits |
+|-------|---------------------|
+| **Human Experience & Productivity** | Real-time ISL translation, 3D avatar signing, and gesture shortcuts for daily communication |
+| **Learning & Knowledge Systems** | AI Tutor, flashcards, interactive quizzes, and chat history for ISL learning |
+| **HealthTech & Bio Platforms** | Emergency mode, hospital/pharmacy locator, and doctor-patient communication |
+| **Developer Tools & Software Infrastructure** | Next.js API routes, TensorFlow CNN (99.17% accuracy), Neo4j AuraDB, and Render deployment |
 
 ---
 
@@ -341,6 +352,25 @@ Dataset:
 - 0-9
 
 ---
+
+# 📽️ Demo & Deliverables
+
+- **Demo Video Link (Mandatory):** [https://youtu.be/your-video-link](https://youtu.be/your-video-link)
+- **Deployment Link (Recommended):** [https://signconnect-qvx7.onrender.com](https://signconnect-qvx7.onrender.com)
+- **GitHub Repository:** [https://github.com/asritha-chikkala/SignConnect](https://github.com/asritha-chikkala/SignConnect)
+- **Pitch Deck / PPT (Optional):** [Paste link]
+
+---
+
+
+## 🎯 Quick Access
+
+```bash
+# Live Demo
+https://signconnect-qvx7.onrender.com
+
+# GitHub Repository
+https://github.com/asritha-chikkala/SignConnect
 
 # 🧬 Future Scope
 
