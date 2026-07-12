@@ -7,7 +7,6 @@ document.addEventListener('DOMContentLoaded', () => {
     iframe.style.display = 'block';
   });
 
-  // If iframe takes too long, show anyway
   setTimeout(() => {
     if (loading.style.display !== 'none') {
       loading.style.display = 'none';

@@ -1,7 +1,6 @@
 let avatarIframe = null;
 let isVisible = false;
 let hideTimeout = null;
-let floatingButton = null;
 
 // Listen for messages from background
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -16,14 +15,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 function showAvatar(text) {
-  // Remove existing iframe
+  console.log('🎯 Showing avatar for:', text);
+  
   if (avatarIframe) {
     avatarIframe.remove();
     avatarIframe = null;
     clearTimeout(hideTimeout);
   }
 
-  // Create iframe with public embed page (no login required)
   avatarIframe = document.createElement('iframe');
   avatarIframe.src = `https://signconnect-qvx7.onrender.com/sign-embed?text=${encodeURIComponent(text)}`;
   avatarIframe.style.cssText = `
@@ -64,7 +63,6 @@ function showAvatar(text) {
 
   document.body.appendChild(avatarIframe);
   
-  // Add close button after iframe is in DOM
   setTimeout(() => {
     if (avatarIframe) {
       avatarIframe.parentNode.insertBefore(closeBtn, avatarIframe);
@@ -75,10 +73,15 @@ function showAvatar(text) {
 
   isVisible = true;
 
-  // Auto-hide after 15 seconds
+  // ✅ Calculate time based on text length
+  const wordCount = text.split(/\s+/).length;
+  const signTime = Math.min(Math.max(wordCount * 1.2, 3), 15);
+  
+  console.log(`📝 ${wordCount} words, signing for ${signTime} seconds`);
+  
   hideTimeout = setTimeout(() => {
     hideAvatar();
-  }, 15000);
+  }, signTime * 1000);
 }
 
 function hideAvatar() {
@@ -94,75 +97,14 @@ function hideAvatar() {
   }
 }
 
-// Keyboard shortcuts
+// Keyboard shortcut to close
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && isVisible) {
     hideAvatar();
   }
 });
 
-// Floating button on text selection
-document.addEventListener('mouseup', (e) => {
-  const selectedText = window.getSelection().toString().trim();
-  
-  if (selectedText.length > 0 && selectedText.length < 500) {
-    if (floatingButton) {
-      floatingButton.remove();
-      floatingButton = null;
-    }
-
-    floatingButton = document.createElement('div');
-    floatingButton.textContent = '🤟';
-    floatingButton.title = 'Sign with SignConnect';
-    floatingButton.style.cssText = `
-      position: fixed;
-      bottom: ${e.clientY + 20}px;
-      left: ${e.clientX + 20}px;
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #22d3ee, #8b5cf6);
-      border: none;
-      color: white;
-      font-size: 22px;
-      cursor: pointer;
-      z-index: 999998;
-      box-shadow: 0 4px 16px rgba(34, 211, 238, 0.4);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      animation: signconnectFadeIn 0.2s ease;
-    `;
-    
-    floatingButton.addEventListener('click', () => {
-      const text = window.getSelection().toString();
-      if (text) {
-        showAvatar(text);
-        if (floatingButton) {
-          floatingButton.remove();
-          floatingButton = null;
-        }
-      }
-    });
-
-    // Auto-hide floating button after 5 seconds
-    setTimeout(() => {
-      if (floatingButton) {
-        floatingButton.remove();
-        floatingButton = null;
-      }
-    }, 5000);
-
-    document.body.appendChild(floatingButton);
-  } else {
-    if (floatingButton) {
-      floatingButton.remove();
-      floatingButton = null;
-    }
-  }
-});
-
-// Add animation styles
+// Animation styles
 const style = document.createElement('style');
 style.textContent = `
   @keyframes signconnectFadeIn {

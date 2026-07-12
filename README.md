@@ -37,6 +37,7 @@
 # 📌 Problem & Domain
 
 India has more than **5 million Deaf and Hard-of-Hearing individuals**, while the number of certified Indian Sign Language interpreters remains extremely limited. This creates communication barriers in education, healthcare, workplaces, banking, and government services.
+
 **Themes Selected:**
 - [x] **Human Experience & Productivity** – Accessibility solution improving quality of life for 5M+ deaf individuals
 - [x] **Learning & Knowledge Systems** – AI-powered ISL education platform with AI Tutor, flashcards, and quizzes

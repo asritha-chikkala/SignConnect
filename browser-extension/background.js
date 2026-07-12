@@ -11,20 +11,41 @@ chrome.runtime.onInstalled.addListener(() => {
 chrome.contextMenus.onClicked.addListener((info, tab) => {
   if (info.menuItemId === "signSelectedText") {
     const selectedText = info.selectionText;
+    
     chrome.tabs.sendMessage(tab.id, {
       action: "signText",
       text: selectedText
+    }).catch(() => {
+      // Inject content script if not present
+      chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        files: ["content.js"]
+      }).then(() => {
+        chrome.tabs.sendMessage(tab.id, {
+          action: "signText",
+          text: selectedText
+        });
+      }).catch((err) => {
+        console.error("Failed to inject:", err);
+      });
     });
   }
 });
 
-// Handle keyboard shortcut
+// Keyboard shortcut
 chrome.commands.onCommand.addListener((command) => {
   if (command === "sign-selected-text") {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      chrome.tabs.sendMessage(tabs[0].id, {
-        action: "signSelected"
-      });
+      if (tabs[0]) {
+        chrome.tabs.sendMessage(tabs[0].id, {
+          action: "signSelected"
+        }).catch(() => {
+          chrome.scripting.executeScript({
+            target: { tabId: tabs[0].id },
+            files: ["content.js"]
+          });
+        });
+      }
     });
   }
 });
