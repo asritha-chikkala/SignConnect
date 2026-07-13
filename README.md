@@ -394,10 +394,10 @@ Dataset:
 
 # 📽️ Demo & Deliverables
 
-- **Demo Video Link (Mandatory):** [https://youtu.be/your-video-link](https://youtu.be/your-video-link)
-- **Deployment Link (Recommended):** [https://signconnect-qvx7.onrender.com](https://signconnect-qvx7.onrender.com)
+- **Demo Video Link :** [https://drive.google.com/file/d/1ahiNLujKKtW1YfWZvNOR7Ka5z1gAYITm/view?usp=sharing](https://drive.google.com/file/d/1ahiNLujKKtW1YfWZvNOR7Ka5z1gAYITm/view?usp=sharing)
+- **Deployment Link :** [https://signconnect-qvx7.onrender.com](https://signconnect-qvx7.onrender.com)
 - **GitHub Repository:** [https://github.com/asritha-chikkala/SignConnect](https://github.com/asritha-chikkala/SignConnect)
-- **Pitch Deck / PPT (Optional):** [https://docs.google.com/presentation/d/1ZWTOyICLC_G1rBl74Z8rj-cUGkq5aQ_i/edit?usp=sharing&ouid=109047851614779894522&rtpof=true&sd=true]
+- **Pitch Deck / PPT :** [https://docs.google.com/presentation/d/1ZWTOyICLC_G1rBl74Z8rj-cUGkq5aQ_i/edit?usp=sharing&ouid=109047851614779894522&rtpof=true&sd=true]
 
 ---
 
@@ -411,7 +411,7 @@ https://signconnect-qvx7.onrender.com
 # GitHub Repository
 https://github.com/asritha-chikkala/SignConnect
 
-# ## 🧬 Future Scope
+# 🧬 Future Scope
 
 - **Expo Mobile App** –  App for on-the-go ISL translation
 - **Word-Level Recognition** – Expand from letters to full word recognition using LSTM
@@ -434,7 +434,7 @@ https://github.com/asritha-chikkala/SignConnect
 
 ---
 
-#  Final Words
+# Final Words
 
 Technology should be accessible to everyone.
 
