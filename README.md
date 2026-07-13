@@ -404,7 +404,7 @@ Dataset:
 
 ## 🎯 Quick Access
 
-```bash
+
 # Live Demo
 https://signconnect-qvx7.onrender.com
 
@@ -434,7 +434,7 @@ https://github.com/asritha-chikkala/SignConnect
 
 ---
 
-# ❤️ Final Words
+#  Final Words
 
 Technology should be accessible to everyone.
 
