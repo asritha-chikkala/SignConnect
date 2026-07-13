@@ -397,7 +397,7 @@ Dataset:
 - **Demo Video Link (Mandatory):** [https://youtu.be/your-video-link](https://youtu.be/your-video-link)
 - **Deployment Link (Recommended):** [https://signconnect-qvx7.onrender.com](https://signconnect-qvx7.onrender.com)
 - **GitHub Repository:** [https://github.com/asritha-chikkala/SignConnect](https://github.com/asritha-chikkala/SignConnect)
-- **Pitch Deck / PPT (Optional):** [Paste link]
+- **Pitch Deck / PPT (Optional):** [https://docs.google.com/presentation/d/1ZWTOyICLC_G1rBl74Z8rj-cUGkq5aQ_i/edit?usp=sharing&ouid=109047851614779894522&rtpof=true&sd=true]
 
 ---
 

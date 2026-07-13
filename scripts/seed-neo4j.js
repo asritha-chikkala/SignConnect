@@ -5,14 +5,19 @@
 const neo4j = require('neo4j-driver');
 require('dotenv').config({ path: '.env.local' });
 
+// ✅ Support both NEO4J_USER and NEO4J_USERNAME
 const uri = process.env.NEO4J_URI;
-const user = process.env.NEO4J_USER;
+const user = process.env.NEO4J_USER || process.env.NEO4J_USERNAME;
 const password = process.env.NEO4J_PASSWORD;
 
 if (!uri || !user || !password) {
   console.error('❌ Neo4j credentials not found in .env.local');
+  console.error('   Please ensure NEO4J_URI, NEO4J_USER (or NEO4J_USERNAME), and NEO4J_PASSWORD are set.');
   process.exit(1);
 }
+
+console.log('🔍 Using Neo4j URI:', uri);
+console.log('🔍 Using Neo4j User:', user);
 
 const driver = neo4j.driver(uri, neo4j.auth.basic(user, password));
 
